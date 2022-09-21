@@ -57,7 +57,7 @@ class authController {
                     email,
                     password,
                     addresses: [address],
-                    id: user++,
+                    id: 1,
                     gender,
                     phone,
                     name,
