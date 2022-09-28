@@ -1,23 +1,32 @@
 const mongoose = require("mongoose")
 
-// 
-const addressSchema = require("./Address").schema
-
 // Schema
 const UserSchema = new mongoose.Schema({
-    id: {
-        type: Number,
-        require: true,
-        unique: true,
-        default: 0,
-    },
     email: {
+        // /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
         type: String,
-        require: true,
+        match: [
+            /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+            "Please add a valid email"
+        ],
+        require: [true, 'Please add a email'],
         unique: true,
+    },
+    password: {
+        type: String,
+        require: [true, 'Please add password'],
+        select: false,
+        minlength: 3,
     },
     addresses: [{
-        type: addressSchema
+        idDefault: {
+            type: Boolean,
+            default: false,
+        },
+        address: {
+            type: String,
+            require: true,
+        },
     }],
     phone: String,
     name: String,
@@ -29,6 +38,7 @@ const UserSchema = new mongoose.Schema({
     // role
     role: {
         type: String,
+        enum: ['USER', 'ADMIN'],
         default: "USER",
 
     },
@@ -36,14 +46,19 @@ const UserSchema = new mongoose.Schema({
         type: Boolean,
         default: true,
     },
+    resetPasswordToken: String,
+    resetPasswordExpire: Date,
     createAt: {
         type: Date,
         default: Date.now,
         require: true,
     }
+}, {
+    timestamps: true,
 })
 
 // increase
 // exports
-module.exports.model = mongoose.model("user", UserSchema)
+let User = mongoose.model("users", UserSchema);
+module.exports.model = User;
 module.exports.schema = UserSchema

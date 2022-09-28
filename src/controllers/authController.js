@@ -1,84 +1,76 @@
+const jwt = require("jsonwebtoken");
+const asyncHandler = require("../middleware/async");
+const ErrorResponse = require("../utils/ErrorResponse");
 const User = require("../models/user/User").model;
 //
+const key = process.env.SECRET_KEY;
+
 class authController {
     // [POST] /login
-    login = async(req, res) => {
+    login = asyncHandler(async(req, res, next) => {
         const { email, password } = req.body;
         // check empty
         try {
-            User.findOne({ email }, (err, data) => {
-                res.send("Success");
-            });
             if (!email || !password) {
-                return res.status(400).send({
-                    status: false,
-                    data: [],
-                    message: "Invalid Input",
-                });
+                return next(new ErrorResponse(`Invalid input with Login`, 400));
             }
+            User.findOne({ email }, (err, data) => {
+                if (data) {
+                    res.status(200).send({
+                        status: true,
+                        data,
+                    });
+                } else {
+                    return next(new ErrorResponse(`User not found ${err.message}`, 404));
+                }
+            });
             // Query
-            res.send({
-                email,
-                password,
-            });
         } catch (e) {
-            console.log(e);
-            res.status(400).json({
-                status: false,
-                data: [],
-                message: "User not found",
-            });
+            next(new ErrorResponse(`Invalid input with Login`, 400))
         }
-    };
+    });
     //[POST] /register
-    register = async(req, res) => {
+    register = async(req, res, next) => {
         const { email, gender, name, phone, password, address } = req.body;
         if (!email | !password) {
-            res.status(400).send({
-                status: false,
-                data: [],
-                message: "Missing email or password",
-            });
+            return next(new ErrorResponse(`Missing email or password`, 400));
         }
         try {
-            let user = User.count({ email }, (err, num) => {
-                if (err) {
-                    console.log(`Cant get count user ${err.message}`);
-                } else return num;
+            const newUser = new User({
+                email,
+                password,
+                addresses: [],
+                gender,
+                phone,
+                name,
             });
-            if (user > 0) {
-                return res.status(400).send({
-                    status: false,
-                    data: [],
-                    message: "Existing username",
-                });
-            } else {
-                const newUser = User({
-                    email,
-                    password,
-                    addresses: [address],
-                    id: 1,
-                    gender,
-                    phone,
-                    name,
-                });
-                newUser.save((err, book) => {
-                    if (err) {
-                        return console.log(`Cant save new user ${err.message}`);
-                    } else {
-                        res.status(200).send({
-                            status: true,
-                            data: book,
-                        });
-                    }
-                });
-            }
+            User.findOne({ email }, (err, user) => {
+                if (user) {
+                    return next(new ErrorResponse(`Existing email`, 404));
+                } else {
+                    const accessToken = jwt.sign({ userId: newUser._id }, key);
+                    const newAddress = {
+                        address: address,
+                        idDefault: true,
+                    };
+
+                    newUser.addresses.push(newAddress);
+
+                    newUser.save((err, userData) => {
+                        if (err) {
+                            return next(new ErrorResponse(`Cant save new user ${err.message}`, 404));
+                        } else {
+                            res.status(200).send({
+                                status: true,
+                                data: userData,
+                                accessToken,
+                            });
+                        }
+                    });
+                }
+            });
         } catch (e) {
-            res.status(400).send({
-                status: false,
-                data: [],
-                message: "Invalid data " + e.message,
-            });
+            next(new ErrorResponse(`Cant save new user ${err.message}`, 404));
         }
     };
     // [POST] /verify-email
