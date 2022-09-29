@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 // Schema
 const UserSchema = new mongoose.Schema({
@@ -7,14 +7,14 @@ const UserSchema = new mongoose.Schema({
         type: String,
         match: [
             /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-            "Please add a valid email"
+            "Please add a valid email",
         ],
-        require: [true, 'Please add a email'],
+        require: [true, "Please add a email"],
         unique: true,
     },
     password: {
         type: String,
-        require: [true, 'Please add password'],
+        require: [true, "Please add password"],
         select: false,
         minlength: 3,
     },
@@ -27,7 +27,7 @@ const UserSchema = new mongoose.Schema({
             type: String,
             require: true,
         },
-    }],
+    }, ],
     phone: String,
     name: String,
     gender: String,
@@ -38,9 +38,8 @@ const UserSchema = new mongoose.Schema({
     // role
     role: {
         type: String,
-        enum: ['USER', 'ADMIN'],
+        enum: ["USER", "ADMIN"],
         default: "USER",
-
     },
     enable: {
         type: Boolean,
@@ -52,13 +51,13 @@ const UserSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
         require: true,
-    }
+    },
 }, {
     timestamps: true,
-})
+});
 
 // increase
 // exports
 let User = mongoose.model("users", UserSchema);
 module.exports.model = User;
-module.exports.schema = UserSchema
+module.exports.schema = UserSchema;
