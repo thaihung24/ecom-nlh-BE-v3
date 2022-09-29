@@ -1,12 +1,13 @@
-import mongoose from 'mongoose'
-import dotenv from 'dotenv'
-import colors from 'colors'
-import products from '../data/products.js'
-import Product from '../models/product/productModel.js'
-import connectDB from '../config/db/index.js'
+const mongoose = require('mongoose')
+const dotenv = require('dotenv')
+const colors = require('colors')
+const products = require('../data/products')
+const Product = require('../models/product/productModel.js')
+const connectDB = require('../config/db')
+
 dotenv.config()
 
-connectDB()
+connectDB.connect()
 
 const importData = async () => {
   try {
@@ -23,7 +24,7 @@ const importData = async () => {
 const destroyData = async () => {
   try {
     await Product.deleteMany()
-    await User.deleteMany()
+    console.log('Data destroy successfully'.green.inverse)
     process.exit()
   } catch (error) {
     console.error(`${error}`.red.inverse)
