@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose')
 // SECRET
 const USER = process.env.MONGO_USER;
 const PASSWORD = process.env.MONGO_PASSWORD;
@@ -20,4 +20,4 @@ const connect = async() => {
     }
 };
 
-module.exports = { connect };
+module.exports = { connect }
