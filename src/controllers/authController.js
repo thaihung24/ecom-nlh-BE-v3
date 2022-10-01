@@ -1,86 +1,72 @@
+const jwt = require("jsonwebtoken");
+const asyncHandler = require("../middleware/async");
+const ErrorResponse = require("../utils/ErrorResponse");
 const User = require("../models/user/User").model;
 //
+const key = process.env.SECRET_KEY;
+
 class authController {
     // [POST] /login
-    login = async(req, res) => {
+    login = asyncHandler(async(req, res, next) => {
         const { email, password } = req.body;
         // check empty
-        try {
-            User.findOne({ email }, (err, data) => {
-                res.send("Success");
-            });
-            if (!email || !password) {
-                return res.status(400).send({
-                    status: false,
-                    data: [],
-                    message: "Invalid Input",
-                });
-            }
-            // Query
-            res.send({
-                email,
-                password,
-            });
-        } catch (e) {
-            console.log(e);
-            res.status(400).json({
-                status: false,
-                data: [],
-                message: "User not found",
-            });
+        if (!email || !password) {
+            return next(new ErrorResponse(`Invalid input with Login`, 400));
         }
-    };
-    //[POST] /register
-    register = async(req, res) => {
-        const { email, gender, name, phone, password, address } = req.body;
-        if (!email | !password) {
-            res.status(400).send({
-                status: false,
-                data: [],
-                message: "Missing email or password",
-            });
-        }
-        try {
-            let user = User.count({ email }, (err, num) => {
-                if (err) {
-                    console.log(`Cant get count user ${err.message}`);
-                } else return num;
-            });
-            if (user > 0) {
-                return res.status(400).send({
-                    status: false,
-                    data: [],
-                    message: "Existing username",
+        User.findOne({ email }, (err, data) => {
+            if (data) {
+                res.status(200).send({
+                    status: true,
+                    data,
                 });
             } else {
-                const newUser = User({
-                    email,
-                    password,
-                    addresses: [address],
-                    id: user++,
-                    gender,
-                    phone,
-                    name,
-                });
-                newUser.save((err, book) => {
+                return next(new ErrorResponse(`User not found ${err.message}`, 404));
+            }
+        });
+
+    });
+    //[POST] /register
+    register = asyncHandler(async(req, res, next) => {
+        const { email, gender, name, phone, password, address } = req.body;
+        if (!email | !password) {
+            return next(new ErrorResponse(`Missing email or password`, 400));
+        }
+        const newUser = new User({
+            email,
+            password,
+            addresses: [],
+            gender,
+            phone,
+            name,
+        });
+        User.findOne({ email }, (err, user) => {
+            if (user) {
+                return next(new ErrorResponse(`Existing email`, 400));
+            } else {
+                const accessToken = jwt.sign({ userId: newUser._id }, key);
+                const newAddress = {
+                    address: address,
+                    idDefault: true,
+                };
+
+                newUser.addresses.push(newAddress);
+
+                newUser.save((err, userData) => {
                     if (err) {
-                        return console.log(`Cant save new user ${err.message}`);
+                        return next(
+                            new ErrorResponse(`Cant save new user ${err.message}`, 404)
+                        );
                     } else {
                         res.status(200).send({
                             status: true,
-                            data: book,
+                            data: userData,
+                            accessToken,
                         });
                     }
                 });
             }
-        } catch (e) {
-            res.status(400).send({
-                status: false,
-                data: [],
-                message: "Invalid data " + e.message,
-            });
-        }
-    };
+        });
+    });
     // [POST] /verify-email
     verify(req, res) {}
 }
