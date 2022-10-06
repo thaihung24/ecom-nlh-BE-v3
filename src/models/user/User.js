@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-
+const slugify = require("slugify");
+const ErrorResponse = require("../../utils/ErrorResponse");
 // Schema
 const UserSchema = new mongoose.Schema({
     email: {
@@ -30,6 +31,9 @@ const UserSchema = new mongoose.Schema({
     }, ],
     phone: String,
     name: String,
+    fullName: String,
+    firstName: String,
+    lastName: String,
     gender: String,
     provider: {
         type: String,
@@ -56,7 +60,17 @@ const UserSchema = new mongoose.Schema({
     timestamps: true,
 });
 
-// increase
+// Slugify
+UserSchema.pre("save", function(next) {
+    let fullNameRaw = this.firstName ? `${this.firstName} ${this.lastName}` : this.name
+    this.fullName = slugify(fullNameRaw, {
+        replacement: "-",
+        trim: true,
+        lower: true,
+    })
+    next();
+});
+
 // exports
 let User = mongoose.model("users", UserSchema);
 module.exports.model = User;
