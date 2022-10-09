@@ -27,7 +27,7 @@ class authController {
     });
     //[POST] /register
     register = asyncHandler(async(req, res, next) => {
-        const { email, gender, name, phone, password, address, fullName, lastName } = req.body;
+        const { email, gender, name, phone, password, address, firstName, lastName, addressTest } = req.body;
         if (!email | !password) {
             return next(new ErrorResponse(`Missing email or password`, 400));
         }
@@ -38,6 +38,10 @@ class authController {
             gender,
             phone,
             name,
+            firstName,
+            lastName,
+            addressTest,
+
         });
         User.findOne({ email }, (err, user) => {
             if (user) {
