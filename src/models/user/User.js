@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const slugify = require("slugify");
+const jwt = require("jsonwebtoken")
+const bcrypt = require("bcrypt");
 const ErrorResponse = require("../../utils/ErrorResponse");
 // Schema
 const UserSchema = new mongoose.Schema({
@@ -71,6 +73,27 @@ UserSchema.pre("save", function(next) {
     next();
 });
 
+// generate access token
+UserSchema.methods.getJwtToken = function() {
+    return jwt.sign({
+        id: this._id
+    }, process.env.JWT_SECRET_KEY, {
+        expiresIn: process.env.JWT_EXPIRES_TIME
+    });
+};
+// Encrypting password before saving user
+UserSchema.pre('save', async function(next) {
+    if (!this.isModified('password')) {
+        next()
+    }
+
+    this.password = await bcrypt.hash(this.password, 10)
+})
+
+// Compare user password
+UserSchema.methods.comparePassword = async function(enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password)
+};
 // exports
 let User = mongoose.model("users", UserSchema);
 module.exports.model = User;
