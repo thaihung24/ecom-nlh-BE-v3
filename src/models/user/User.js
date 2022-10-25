@@ -1,3 +1,5 @@
+const bcrypt = require('bcryptjs')
+
 const mongoose = require("mongoose");
 const slugify = require("slugify");
 const geocoder = require("../../utils/geocoder")
@@ -8,15 +10,15 @@ const UserSchema = new mongoose.Schema({
         type: String,
         match: [
             /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-            "Please add a valid email",
+            'Please add a valid email',
         ],
-        require: [true, "Please add a email"],
+        require: [true, 'Please add a email'],
         unique: true,
     },
     password: {
         type: String,
-        require: [true, "Please add password"],
-        select: false,
+        require: [true, 'Please add password'],
+        //   select: false,
         minlength: 3,
     },
     addresses: [{
@@ -58,13 +60,13 @@ const UserSchema = new mongoose.Schema({
     gender: String,
     provider: {
         type: String,
-        default: "TGDD",
+        default: 'TGDD',
     },
     // role
-    role: {
-        type: String,
-        enum: ["USER", "ADMIN"],
-        default: "USER",
+    isAdmin: {
+        type: Boolean,
+        required: true,
+        default: false,
     },
     enable: {
         type: Boolean,
@@ -79,7 +81,20 @@ const UserSchema = new mongoose.Schema({
     },
 }, {
     timestamps: true,
-});
+})
+UserSchema.methods.matchPassword = async function(enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password)
+}
+
+
+UserSchema.pre('save', async function(next) {
+        if (!this.isModified('password')) {
+            next()
+        }
+        const salt = await bcrypt.genSalt(10)
+        this.password = await bcrypt.hash(this.password, salt)
+    })
+    // increase
 
 // Slugify
 UserSchema.pre("save", function(next) {
@@ -113,7 +128,8 @@ UserSchema.pre('save', async function(next) {
 });
 
 
+
 // exports
-let User = mongoose.model("users", UserSchema);
-module.exports.model = User;
-module.exports.schema = UserSchema;
+let User = mongoose.model('users', UserSchema)
+module.exports = User
+module.exports.schema = UserSchema
