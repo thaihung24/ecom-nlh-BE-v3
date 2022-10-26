@@ -1,9 +1,7 @@
 const bcrypt = require('bcryptjs')
-
 const mongoose = require("mongoose");
 const slugify = require("slugify");
 const jwt = require("jsonwebtoken")
-const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const ErrorResponse = require("../../utils/ErrorResponse");
 
