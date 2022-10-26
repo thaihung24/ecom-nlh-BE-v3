@@ -11,8 +11,12 @@ const sendToken = (user, statusCode, res) => {
         ),
         httpOnly: true
     }
+    const { message } = user
+    delete user.message;
+
     res.status(statusCode).cookie('accessToken', accessToken, options).json({
         success: true,
+        message: message || "Authenticated",
         accessToken,
         user
     })
