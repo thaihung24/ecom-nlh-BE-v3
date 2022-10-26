@@ -1,36 +1,58 @@
-const jwt = require("jsonwebtoken");
-const asyncHandler = require("../middleware/async");
+const crypto = require('crypto');
+//middleware
+const catchAsyncHandler = require("../middleware/async");
 const ErrorResponse = require("../utils/ErrorResponse");
+const sendToken = require("../utils/jwtToken");
 const User = require("../models/user/User").model;
 //
-const key = process.env.SECRET_KEY;
+const sendEmail = require("../utils/sendEmail");
 
 class authController {
     // [POST] /login
-    login = asyncHandler(async(req, res, next) => {
-        const { email, password } = req.body;
+    login = catchAsyncHandler(async(req, res, next) => {
+        const {
+            email,
+            password
+        } = req.body;
         // check empty 
         if (!email || !password) {
-            return next(new ErrorResponse(`Invalid input with Login`, 400));
+            return next(new ErrorResponse(`Missing email or password`, 400));
         }
-        User.findOne({ email }, (err, data) => {
-            if (data) {
-                res.status(200).send({
-                    status: true,
-                    data,
-                });
-            } else {
-                return next(new ErrorResponse(`User not found ${err.message}`, 404));
-            }
-        });
+        const user = await User.findOne({
+            email
+        }).select('+password')
 
+        if (!user) return next(new ErrorResponse(`User not found`, 404));
+        // Checks if password is correct or not
+        const isPasswordMatched = await user.comparePassword(password);
+
+        if (!isPasswordMatched) {
+            return next(new ErrorResponse('Invalid Email or Password', 401));
+        }
+
+        sendToken(user, 200, res)
     });
     //[POST] /register
-    register = asyncHandler(async(req, res, next) => {
-        const { email, gender, name, phone, password, address, fullName, lastName } = req.body;
+    register = catchAsyncHandler(async(req, res, next) => {
+        const {
+            email,
+            gender,
+            name,
+            phone,
+            password,
+            address,
+            firstName,
+            lastName
+        } = req.body;
         if (!email | !password) {
             return next(new ErrorResponse(`Missing email or password`, 400));
         }
+        const user = await User.findOne({
+            email: email
+        });
+
+        if (user) return next(new ErrorResponse(`Existing email`, 400));
+
         const newUser = new User({
             email,
             password,
@@ -38,37 +60,72 @@ class authController {
             gender,
             phone,
             name,
-        });
-        User.findOne({ email }, (err, user) => {
-            if (user) {
-                return next(new ErrorResponse(`Existing email`, 400));
-            } else {
-                const accessToken = jwt.sign({ userId: newUser._id }, key);
-                const newAddress = {
-                    address: address,
-                    idDefault: true,
-                };
+            firstName,
+            lastName,
+            fullName: `${firstName} ${lastName}`
+        })
 
-                newUser.addresses.push(newAddress);
+        const newAddress = {
+            address: address,
+            idDefault: true,
+        };
 
-                newUser.save((err, userData) => {
-                    if (err) {
-                        return next(
-                            new ErrorResponse(`Cant save new user ${err.message}`, 404)
-                        );
-                    } else {
-                        res.status(200).send({
-                            status: true,
-                            data: userData,
-                            accessToken,
-                        });
-                    }
-                });
-            }
-        });
+        newUser.addresses.push(newAddress);
+
+        const verifyToken = newUser.verifyEmailToken();
+        await newUser.save();
+
+        // send email
+        const resetUrl = `${req.protocol}://${req.get('host')}/api/auth/verify-email/${verifyToken}`;
+        const message = `Your verify token is as follow:\n\n${resetUrl}\n\nLink will be expired after 30 minutes\n\nIf you have not requested this email, then ignore it.`
+
+        try {
+            await sendEmail({
+                email: newUser.email,
+                subject: 'HLN website Email Verify',
+                message: message,
+            })
+            res.status(200).json({
+                success: true,
+                message: `Email sent to: ${newUser.email}, account will be removed from system after 30 minutes without verify`
+            })
+        } catch (e) {
+            newUser.emailCodeExpires = undefined;
+            newUser.emailCodeToken = undefined;
+            User.insert
+            await newUser.save({
+                validateBeforeSave: false
+            });
+
+            return next(new ErrorResponse(e.message, 500))
+        }
     });
-    // [POST] /verify-email
-    verify(req, res) {}
+    // [POST] /verify-email/:token
+    verifyEmail = catchAsyncHandler(async(req, res, next) => {
+            const {
+                token
+            } = req.params
+
+            // Hash URL token
+            const verifyToken = crypto.createHash('sha256').update(token).digest('hex')
+
+            const user = await User.findOne({
+                emailCodeToken: verifyToken,
+                emailCodeExpires: {
+                    $gt: Date.now()
+                }
+            })
+
+            if (!user) {
+                return next(new ErrorResponse('Verify token is invalid or has been expired', 400))
+            }
+            user.enable = true
+            await user.save({
+                validateBeforeSave: false
+            })
+            sendToken(user, 200, res)
+        })
+        //
 }
 
 module.exports = new authController();
