@@ -5,6 +5,16 @@ const cookieParser = require('cookie-parser')
 require("dotenv").config();
 const app = express();
 
+//cors 
+const cors = require("cors");
+const corsOptions = {
+    origin: "https://xenodochial-brahmagupta-6b5e18.netlify.app/",
+    credentials: true, //access-control-allow-credentials:true
+    optionSuccessStatus: 200,
+};
+app.use(cors());
+
+
 // middle ware for dev log
 const morgan = require('morgan')
 
