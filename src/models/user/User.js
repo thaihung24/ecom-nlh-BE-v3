@@ -22,6 +22,7 @@ const UserSchema = new mongoose.Schema({
         require: [true, 'Please add password'],
         //   select: false,
         minlength: 3,
+        select: false,
     },
     addresses: [{
         idDefault: {
@@ -69,15 +70,6 @@ UserSchema.methods.matchPassword = async function(enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password)
 }
 
-
-UserSchema.pre('save', async function(next) {
-        if (!this.isModified('password')) {
-            next()
-        }
-        const salt = await bcrypt.genSalt(10)
-        this.password = await bcrypt.hash(this.password, salt)
-    })
-    // increase
 
 // Slugify
 UserSchema.pre("save", function(next) {

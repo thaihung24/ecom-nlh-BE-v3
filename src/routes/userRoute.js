@@ -1,18 +1,21 @@
 const express = require('express')
 const router = express.Router()
-const userCOntrollers = require('../controllers/userController')
-const { protect, admin } = require('../middleware/authMiddleware.js')
-//@desc Fetch single products
-//@route GET /api/products/:id
-//@access Public]]
+const userController = require('../controllers/userController')
+const verifyToken = require('../middleware/auth')
+const {
+    admin
+} = require('../middleware/authMiddleware.js')
+
+
+//[PUT] /api/users/profile
+//[GET] /api/users/profile
 router
-  .route('/')
-  .post(userCOntrollers.registerUser)
-  .get(protect, admin, userCOntrollers.getUsers)
-router.post('/login', userCOntrollers.authUser)
-router
-  .route('/profile')
-  .get(protect, userCOntrollers.getUserProfile)
-  .put(protect, userCOntrollers.updateUserProfile)
+    .route('/profile')
+    .get(verifyToken, userController.getUserProfile)
+    .put(verifyToken, userController.updateUserProfile)
+
+//[PUT] /api/users/profile
+//[GET] /api/users/profile
+router.route('/admin').get(verifyToken, admin, userController.getUsers)
 
 module.exports = router

@@ -1,37 +1,36 @@
 const jwt = require('jsonwebtoken')
 const asyncHandler = require('express-async-handler')
+const ErrorResponse = require('../utils/ErrorResponse')
 const User = require('../models/user/User')
 
-const protect = asyncHandler(async (req, res, next) => {
-  let token
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    try {
-      token = req.headers.authorization.split(' ')[1]
-      const decoded = jwt.verify(token, process.env.JWT_SECRET)
-      req.user = await User.findById(decoded.id).select('-password')
-      next()
-    } catch (error) {
-      console.error(error)
-      res.status(401)
-      throw new Error('Not authorized token failed')
+const protect = asyncHandler(async(req, res, next) => {
+    let token
+    if (
+        req.headers.authorization &&
+        req.headers.authorization.startsWith('Bearer')
+    ) {
+        try {
+            token = req.headers.authorization.split(' ')[1]
+            const decoded = jwt.verify(token, process.env.JWT_SECRET)
+            req.user = await User.findById(decoded.id).select('-password')
+            next()
+        } catch (error) {
+            return next(new ErrorResponse('UnAuthenticated token failed', 401))
+        }
     }
-  }
-  if (!token) {
-    res.status(401)
-    throw new Error('Not authorized, no token')
-  }
+    if (!token) {
+        return next(new ErrorResponse('UnAuthenticated, no token', 401))
+    }
 })
 
 const admin = (req, res, next) => {
-  if (req.user && req.user.isAdmin) {
+    if (!(req.user && req.user.isAdmin)) {
+        return next(new ErrorResponse('UnAuthorization, no admin'))
+    }
     next()
-  } else {
-    res.status(401)
-    throw new Error('Not authorized, no admin')
-  }
 }
 
-module.exports = { protect, admin }
+module.exports = {
+    protect,
+    admin
+}

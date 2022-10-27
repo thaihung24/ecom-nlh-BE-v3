@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const catchAsyncHandler = require("../middleware/async");
 const ErrorResponse = require("../utils/ErrorResponse");
 const sendToken = require("../utils/jwtToken");
-const User = require("../models/user/User").model;
+const User = require("../models/user/User");
 //
 const sendEmail = require("../utils/sendEmail");
 
@@ -27,7 +27,7 @@ class authController {
         const isPasswordMatched = await user.comparePassword(password);
 
         if (!isPasswordMatched) {
-            return next(new ErrorResponse('Invalid Email or Password', 401));
+            return next(new ErrorResponse(`Invalid Email or Password`, 401));
         }
 
         sendToken(user, 200, res)

@@ -15,7 +15,7 @@ const AddressSchema = mongoose.Schema({
 });
 // exports
 let Address = mongoose.model("address", AddressSchema);
-module.exports.model = Address;
+module.exports = Address;
 
 module.exports.schema = AddressSchema;
 
