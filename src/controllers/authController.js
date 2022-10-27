@@ -29,7 +29,6 @@ class authController {
         if (!isPasswordMatched) {
             return next(new ErrorResponse(`Invalid Email or Password`, 401));
         }
-
         sendToken(user, 200, res)
     });
     //[POST] /register
