@@ -5,10 +5,12 @@ const verifyToken = require('../middleware/auth')
 const { admin } = require('../middleware/authMiddleware.js')
 
 router
-  .get('/', productController.index)
+  .route('/')
+  .get(productController.index)
   .post(verifyToken, admin, productController.createProduct)
 router
-  .get('/:id', productController.getProductById)
+  .route('/:id')
+  .get(productController.getProductById)
   .delete(verifyToken, admin, productController.deleteProduct)
   .put(verifyToken, admin, productController.updateProduct)
 module.exports = router

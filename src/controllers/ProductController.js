@@ -29,7 +29,6 @@ class ProductController {
   // @access  Private/Admin
   deleteProduct = asyncHandler(async (req, res) => {
     const product = await Product.findById(req.params.id)
-
     if (product) {
       await product.remove()
       res.json({ message: 'Product removed' })

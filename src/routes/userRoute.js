@@ -14,5 +14,10 @@ router
 //[PUT] /api/users/profile
 //[GET] /api/users/profile
 router.route('/').get(verifyToken, admin, userController.getUsers)
+router
+  .route('/:id')
+  .delete(verifyToken, admin, userController.deleteUser)
+  .get(verifyToken, admin, userController.getUserById)
+  .put(verifyToken, admin, userController.updateUser)
 
 module.exports = router
