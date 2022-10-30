@@ -21,6 +21,11 @@ const productSchema = mongoose.Schema(
       required: true,
       ref: 'User',
     },
+    manufacturer: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: 'Manufacturer',
+    },
     name: {
       type: String,
       required: true,
