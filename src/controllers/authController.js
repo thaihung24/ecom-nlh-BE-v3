@@ -75,7 +75,9 @@ class authController {
         await newUser.save();
 
         // send email
-        const resetUrl = `${req.protocol}://${req.get('host')}/api/auth/verify-email/${verifyToken}`;
+        // const resetUrl = `${req.protocol}://${req.get('host')}/api/auth/verify-email/${verifyToken}`;
+        const resetUrl = `localhost:3000/api/auth/verify-email/${verifyToken}`;
+
         const message = `Your verify token is as follow:\n\n${resetUrl}\n\nLink will be expired after 30 minutes\n\nIf you have not requested this email, then ignore it.`
 
         try {
