@@ -4,6 +4,7 @@ const productController = require('../controllers/ProductController')
 const verifyToken = require('../middleware/auth')
 const { admin } = require('../middleware/authMiddleware.js')
 
+router.route('/topreviews').get(productController.getTopProducts)
 router
   .route('/')
   .get(productController.index)
@@ -13,4 +14,8 @@ router
   .get(productController.getProductById)
   .delete(verifyToken, admin, productController.deleteProduct)
   .put(verifyToken, admin, productController.updateProduct)
+router
+  .route('/:id/reviews')
+  .post(verifyToken, productController.createProductReview)
+
 module.exports = router
