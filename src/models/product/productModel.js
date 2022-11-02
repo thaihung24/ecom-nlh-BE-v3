@@ -14,6 +14,44 @@ const reviewSchema = mongoose.Schema({
     required: true,
   },
 })
+const imageSchema = mongoose.Schema({
+  urlImage: {
+    type: String,
+    required: true,
+    default: '',
+  },
+})
+const optionSchema = mongoose.Schema({
+  productOptionName: {
+    type: String,
+    required: true,
+  },
+  price: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  promotion: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  colors: [
+    {
+      color: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'Color',
+      },
+      quantity: {
+        type: Number,
+        required: true,
+        default: 0,
+      },
+      images: [imageSchema],
+    },
+  ],
+})
 const productSchema = mongoose.Schema(
   {
     user: {
@@ -34,17 +72,15 @@ const productSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    brand: {
-      type: String,
-      required: true,
-    },
-    category: {
-      type: String,
-      required: true,
-    },
+    productOptions: [optionSchema],
     description: {
       type: String,
       required: true,
+    },
+    subCategory: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: 'Manufacturer',
     },
     reviews: [reviewSchema],
     rating: {
