@@ -4,7 +4,7 @@
 19110036 - Dan Bảo Nguyên <br/>**
 
 ## Noti (11/02/2022 - Loc - Team 56 Representation)
-Heroku's free dynos wont be still available from 28, Novemver 2022 <br/>
+Heroku's free dynos will no longer be available from 28, Novemver 2022 <br/>
 Alter: Render WebService <br/>
 **Link: https://tlcn-2022-be.onrender.com <br/>**
 But Heroku still be available now <br/>
