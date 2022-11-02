@@ -1,4 +1,7 @@
 # TLCN-2022-BE
+19110237 - Lê Hoàng Lộc
+19110221 - Nguyễn Thái Hưng
+19110036 - Dan Bảo Nguyên
 
 ## Noti (11/02/2022 - Loc - Team 56 Representation)
 Heroku's free dynos wont be still available from 28, Novemver 2022 <br/>
