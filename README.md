@@ -1,14 +1,14 @@
 # TLCN-2022-BE
-19110237 - Lê Hoàng Lộc
-19110221 - Nguyễn Thái Hưng
-19110036 - Dan Bảo Nguyên
+**19110237 - Lê Hoàng Lộc <br/>
+19110221 - Nguyễn Thái Hưng <br/>
+19110036 - Dan Bảo Nguyên <br/>**
 
 ## Noti (11/02/2022 - Loc - Team 56 Representation)
 Heroku's free dynos wont be still available from 28, Novemver 2022 <br/>
 Alter: Render WebService <br/>
-Link: https://tlcn-2022-be.onrender.com <br/>
+**Link: https://tlcn-2022-be.onrender.com <br/>**
 But Heroku still be available now
-Link: https://tlcn-2022-be.herokuapp.com <br/>
+**Link: https://tlcn-2022-be.herokuapp.com <br/>**
 
 
 ##Back-end. TLCN 2022. Iner note
