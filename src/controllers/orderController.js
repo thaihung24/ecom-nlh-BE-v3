@@ -34,10 +34,7 @@ class orderControllers {
         const product = await Product.findById(item.product)
         product.productOptions.forEach((Option, index) => {
           Option.colors.forEach((color, i) => {
-            if (
-              color.color.toString() === item.color ||
-              color.color.toString() === '635ff51e6d4c5bd802099d55'
-            ) {
+            if (color.color.toString() === item.color) {
               product.productOptions[index].colors[i].quantity -= item.qty
             }
           })
