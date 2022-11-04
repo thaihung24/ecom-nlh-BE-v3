@@ -18,7 +18,7 @@ class ProductController {
   getProductById = asyncHandler(async (req, res) => {
     const product = await Product.findById(req.params.id)
     if (product) {
-      res.json(product)
+      res.json(product.productOptions)
     } else {
       res.status(404)
       throw new Error('Product not found')
@@ -101,14 +101,13 @@ class ProductController {
         res.status(400)
         throw new Error('Product already reviewed')
       }
-
       const review = {
+        user: req.user._id,
         name: req.user.name,
         rating: Number(rating),
         comment,
-        user: req.user._id,
       }
-
+      console.log(review)
       product.reviews.push(review)
 
       product.numReviews = product.reviews.length
