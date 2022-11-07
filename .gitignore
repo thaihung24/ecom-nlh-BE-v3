@@ -4,3 +4,6 @@
 # yarn
 /yarn-error.log
 /yarn.lock
+#
+npm-debug.log
+.DS_Store
