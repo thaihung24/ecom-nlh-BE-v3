@@ -1,20 +1,32 @@
 const Product = require('../models/product/productModel')
 const asyncHandler = require('../middleware/async')
-
+const ErrorResponse = require("../utils/ErrorResponse")
+const APIFeatures = require('../utils/ApiFeature')
 class ProductController {
   //[GET] /api/products
-  // @desc    Fetch single product
-  // @route   GET /api/products/
-  // @access  Public
-  index = asyncHandler(async (req, res) => {
-    const products = await Product.find({})
-    if (products) {
-      res.json(products)
-    } else {
-      res.status(404)
-      throw new Error('Product not found')
-    }
-  })
+    // @desc    Fetch single product
+    // @route   GET /api/products/
+    // @access  Public
+    index = asyncHandler(async(req, res) => {
+        const size = req.query.size || 5;
+        const page = req.query.page || 1;
+
+
+        const apiFeatures = new APIFeatures(Product.find({}), req.query).search().filter();
+        let products = await apiFeatures.query;
+        // Pagination
+
+        if (!products) return next(new ErrorResponse('Product not found', 404))
+
+        apiFeatures.pagination(size, page)
+        products = await apiFeatures.query.clone();
+
+        res.status(200).json({
+            success: true,
+            products,
+            message: "Get products"
+        })
+    })
   getProductById = asyncHandler(async (req, res) => {
     const product = await Product.findById(req.params.id)
     if (product) {
