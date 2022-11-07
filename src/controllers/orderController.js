@@ -30,6 +30,17 @@ class orderControllers {
         totalPrice,
       })
       const createdOrder = await order.save()
+      order.orderItems.forEach(async (item) => {
+        const product = await Product.findById(item.product)
+        product.productOptions.forEach((Option, index) => {
+          Option.colors.forEach((color, i) => {
+            if (color.color.toString() === item.color) {
+              product.productOptions[index].colors[i].quantity -= item.qty
+            }
+          })
+        })
+        await product.save()
+      })
       res.status(201).json(createdOrder)
     }
   })
