@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-
+const comment = require('../comment/comment.js')
 const reviewSchema = mongoose.Schema({
   user: {
     type: String,
@@ -18,6 +18,7 @@ const reviewSchema = mongoose.Schema({
     required: true,
   },
 })
+
 const imageSchema = mongoose.Schema({
   urlImage: {
     type: String,
@@ -86,6 +87,7 @@ const productSchema = mongoose.Schema(
       required: true,
       ref: 'Manufacturer',
     },
+    comments: [],
     reviews: [reviewSchema],
     rating: {
       type: Number,
