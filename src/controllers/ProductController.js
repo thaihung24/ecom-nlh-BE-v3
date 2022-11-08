@@ -1,9 +1,11 @@
 const Product = require('../models/product/productModel')
 const Comment = require('../models/comment/comment')
 const asyncHandler = require('../middleware/async')
-
+const ErrorResponse = require("../utils/ErrorResponse")
+const APIFeatures = require('../utils/ApiFeature')
 class ProductController {
   //[GET] /api/products
+
   // @desc    Fetch single product
   // @route   GET /api/products/
   // @access  Public
@@ -29,6 +31,7 @@ class ProductController {
       throw new Error('Product not found')
     }
   })
+
   getProductById = asyncHandler(async (req, res) => {
     const product = await Product.findById(req.params.id)
     const comments = await Comment.find({ product: product._id })
