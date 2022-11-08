@@ -88,6 +88,10 @@ class orderControllers {
     const orders = await Order.find({ user: req.user._id })
     res.json(orders)
   })
+  getAllOrders = asyncHandler(async (req, res) => {
+    const orders = await Order.find({})
+    res.json(orders)
+  })
 }
 
 module.exports = new orderControllers()

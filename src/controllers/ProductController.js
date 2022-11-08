@@ -1,36 +1,44 @@
 const Product = require('../models/product/productModel')
+const Comment = require('../models/comment/comment')
 const asyncHandler = require('../middleware/async')
 const ErrorResponse = require("../utils/ErrorResponse")
 const APIFeatures = require('../utils/ApiFeature')
 class ProductController {
   //[GET] /api/products
-    // @desc    Fetch single product
-    // @route   GET /api/products/
-    // @access  Public
-    index = asyncHandler(async(req, res) => {
-        const size = req.query.size || 5;
-        const page = req.query.page || 1;
 
+  // @desc    Fetch single product
+  // @route   GET /api/products/
+  // @access  Public
+  index = asyncHandler(async (req, res) => {
+    const pageSize = 3
+    const page = Number(req.query.page) || 1
+    const keyword = req.query.keyword
+      ? {
+          name: {
+            $regex: req.query.keyword,
+            $options: 'i',
+          },
+        }
+      : {}
+    const count = await Product.count({ ...keyword })
+    const products = await Product.find({ ...keyword })
+      .limit(pageSize)
+      .skip(pageSize * (page - 1))
+    if (products) {
+      res.json({ products, page, pages: Math.ceil(count / pageSize) })
+    } else {
+      res.status(404)
+      throw new Error('Product not found')
+    }
+  })
 
-        const apiFeatures = new APIFeatures(Product.find({}), req.query).search().filter();
-        let products = await apiFeatures.query;
-        // Pagination
-
-        if (!products) return next(new ErrorResponse('Product not found', 404))
-
-        apiFeatures.pagination(size, page)
-        products = await apiFeatures.query.clone();
-
-        res.status(200).json({
-            success: true,
-            products,
-            message: "Get products"
-        })
-    })
   getProductById = asyncHandler(async (req, res) => {
     const product = await Product.findById(req.params.id)
+    const comments = await Comment.find({ product: product._id })
+
     if (product) {
-      res.json(product.productOptions)
+      product.comments = comments
+      res.json(product)
     } else {
       res.status(404)
       throw new Error('Product not found')
@@ -110,18 +118,22 @@ class ProductController {
       )
 
       if (alreadyReviewed) {
-        res.status(400)
-        throw new Error('Product already reviewed')
-      }
-      const review = {
-        user: req.user._id,
-        name: req.user.name,
-        rating: Number(rating),
-        comment,
-      }
-      console.log(review)
-      product.reviews.push(review)
+        product.reviews.forEach((review) => {
+          if (review.user.toString() === req.user._id.toString()) {
+            review.comment = comment
+            review.rating = rating
+          }
+        })
+      } else {
+        const review = {
+          user: req.user._id,
+          name: req.user.name,
+          rating: Number(rating),
+          comment,
+        }
 
+        product.reviews.push(review)
+      }
       product.numReviews = product.reviews.length
 
       product.rating =
