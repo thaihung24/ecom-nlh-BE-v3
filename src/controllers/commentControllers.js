@@ -3,6 +3,8 @@ const catchAsyncHandler = require('../middleware/async')
 const ErrorResponse = require('../utils/ErrorResponse')
 const Comment = require('../models/comment/comment.js')
 const { reset } = require('nodemon')
+const { find } = require('../models/comment/comment.js')
+const { setRandomFallback } = require('bcryptjs')
 
 class commentControllers {
   // @desc Create new comment
@@ -64,6 +66,63 @@ class commentControllers {
       res.status(404).json({
         success: false,
         message: 'not found comment',
+      })
+    }
+  })
+  // @desc add reply  comment
+  // @route   POST /api/comments/:id/reply
+  // @access  Private
+  addReplyComment = catchAsyncHandler(async (req, res) => {
+    const comment = await Comment.findById(req.params.id)
+    const reply = req.body.reply
+
+    if (comment && reply) {
+      const replyComment = {
+        user: req.user._id,
+        name: req.user.name,
+        reply,
+      }
+      comment.replies.push(replyComment)
+      await comment.save()
+      res.status(201).json({
+        success: true,
+        comment,
+      })
+    } else {
+      res.status(404).json({
+        success: false,
+        message: 'ERROR',
+      })
+    }
+  })
+  updateReplyComment = asyncHandler(async (req, res) => {
+    const comment = await Comment.findById(req.params.id)
+    const { replyId, repUpdate } = req.body
+    const checkReply = comment.replies.find(
+      (r) => r.user.toString() === req.user._id.toString()
+    )
+    if (checkReply) {
+      comment.replies.forEach(async (reply) => {
+        if (reply._id.toString() === replyId) {
+          try {
+            reply.reply = repUpdate
+            await comment.save()
+            res.status(201).json({
+              success: true,
+              comment,
+            })
+          } catch (error) {
+            res.status(201).json({
+              success: false,
+              message: 'ERROR: Could not update',
+            })
+          }
+        }
+      })
+    } else {
+      res.status(404).json({
+        success: false,
+        message: 'ERROR: authenticated',
       })
     }
   })

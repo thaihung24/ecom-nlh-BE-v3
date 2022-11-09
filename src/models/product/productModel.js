@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const comment = require('../comment/comment.js')
+
 const reviewSchema = mongoose.Schema({
   user: {
     type: String,
