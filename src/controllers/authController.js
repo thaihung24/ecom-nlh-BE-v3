@@ -7,10 +7,14 @@ const User = require('../models/user/User')
     //
 const sendEmail = require('../utils/sendEmail')
 const generateToken = require('../utils/generateToken.js')
+const passport = require('passport')
 class authController {
     // [POST] /login
     login = catchAsyncHandler(async(req, res, next) => {
-            const { email, password } = req.body
+            const {
+                email,
+                password
+            } = req.body
                 // check empty
             if (!email || !password) {
                 return next(new ErrorResponse(`Missing email or password`, 400))
@@ -60,21 +64,19 @@ class authController {
                 fullName: `${firstName} ${lastName}`,
             })
 
-            const newAddress = {
-                address: address,
+            newUser.addresses.push({
                 idDefault: true,
-            }
-
-            newUser.addresses.push(newAddress)
+                address: address,
+            })
 
             const verifyToken = newUser.verifyEmailToken()
             await newUser.save()
 
             // send email
             // const resetUrl = `${req.protocol}://${req.get('host')}/api/auth/verify-email/${verifyToken}`;
-            const resetUrl = `e-com-nlh-fe.vercel.app/api/auth/verify-email/${verifyToken}`;
+            const resetUrl = `${process.env.CLIENT_URL}/api/auth/verify-email/${verifyToken}`;
 
-            const message = `Your verify token is as follow:\n\n${resetUrl}\n\nLink will be expired after 30 minutes\n\nIf you have not requested this email, then ignore it.`
+            const message = `Your verify token for active ${newUser.fullName} is as follow:\n\n${resetUrl}\n\nLink will be expired after 30 minutes\n\nIf you have not requested this email, then ignore it.`
 
             try {
                 await sendEmail({
@@ -99,7 +101,9 @@ class authController {
         })
         // [POST] /verify-email/:token
     verifyEmail = catchAsyncHandler(async(req, res, next) => {
-            const { token } = req.params
+            const {
+                token
+            } = req.params
 
             // Hash URL token
             const verifyToken = crypto.createHash('sha256').update(token).digest('hex')
@@ -122,7 +126,11 @@ class authController {
             })
             sendToken(user, 200, res)
         })
-        //
+        //#### OAUTH2
+        // Google
+    googleAuth = catchAsyncHandler(async(req, res, next) => {
+        return passport.authenticate('google')
+    })
 }
 
 module.exports = new authController()
