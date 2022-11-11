@@ -1,7 +1,11 @@
 const mongoose = require("mongoose");
 
 const reviewSchema = mongoose.Schema({
-  userName: {
+  user: {
+    type: String,
+    required: true,
+  },
+  name: {
     type: String,
     required: true,
   },
