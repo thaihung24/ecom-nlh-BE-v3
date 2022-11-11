@@ -29,6 +29,15 @@ const orderSchema = mongoose.Schema(
           required: true,
           ref: 'Product',
         },
+        color: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          ref: 'Color',
+        },
+        option: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+        },
       },
     ],
     shippingAddress: {
