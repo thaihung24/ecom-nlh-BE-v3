@@ -5,9 +5,11 @@ const authRoute = require('./authRoute')
 const productRoute = require('./productRoute')
 const userRoute = require('./userRoute')
 const orderRoute = require('./orderRoute')
+const commentRoute = require('./commentRoute')
 const oauthRoute = require("./oauthRoute")
-    //
 function route(app) {
+  //Comment
+  app.use('/api/comments', commentRoute)
     //Oder
     app.use('/api/orders', orderRoute)
         //PAYPAL_CLIENT_ID
