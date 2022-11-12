@@ -21,7 +21,7 @@ class userControllers {
         //@desc UPDATE user profile
         //@route PUT / api/users/profile
         //@access Private
-    updateUserProfile = catchAsyncHandler(async(req, res) => {
+    updateUserProfile = catchAsyncHandler(async(req, res, next) => {
         const user = await User.findById(req.user._id)
         if (!user) {
             return next(new ErrorResponse('User not found', 401))
@@ -52,23 +52,28 @@ class userControllers {
         } else {
             // Update address
             const {
-                editAddress
+                editAddress,
+                newAddress
             } = req.body
             if (editAddress) {
-                const newAddress = user.addresses.filter(address => address.detailAddress._id != editAddress)
-                const address = await Address.create({
-                    ...addresses[0].detailAddress,
+                const newAddresses = user.addresses.find(address => address.detailAddress._id == editAddress)
+                Address.findByIdAndUpdate(editAddress, {
+                    ...newAddress.detailAddress
+                }, (err, res) => {
+                    if (err) return next(new ErrorResponse("Cant update address", 400))
                 })
-                newAddress.push({
-                    ...addresses[0],
-                    detailAddress: address,
-                })
-                user.addresses = newAddress
 
+                user.addresses.forEach((address) => {
+                    if (address.detailAddress._id == editAddress) {
+                        address.address = newAddress.address
+                    }
+                })
             }
         }
 
-        const updateUser = await user.save()
+        const updateUser = await user.save({
+            validateBeforeSave: false,
+        })
 
         res.status(200).json({
             success: true,
@@ -80,37 +85,21 @@ class userControllers {
     // ##DELETE ADDRESS
     // DELETE /api/users/address/:addressID
     deleteAddress = catchAsyncHandler(async(req, res) => {
+
             const {
                 addressID
             } = req.params
             const user = await User.findById(req.user.id)
 
-            const addresses = user.addresses.filter((v) => v.detailAddress._id != addressID)
-
-            user.addresses = addresses
-
-            await user.save()
-
-            res.status(200).json({
-                success: true,
-                message: 'Address deleted'
+            const addresses = user.addresses.filter((v) => {
+                return v.detailAddress._id.toString() != addressID
             })
 
-        })
-        // ##PUT ADDRESS
-        // PUT /api/users/address/:addressID
-    updateAddress = catchAsyncHandler(async(req, res) => {
-            const {
-                addressID
-            } = req.params
-
-            const user = await User.findById(req.user.id)
-
-            const addresses = user.addresses.filter((v) => v.detailAddress._id != addressID)
-
             user.addresses = addresses
 
-            await user.save()
+            await user.save({
+                validateBeforeSave: false,
+            })
 
             res.status(200).json({
                 success: true,
