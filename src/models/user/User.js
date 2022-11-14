@@ -49,6 +49,7 @@ const UserSchema = new mongoose.Schema({
         default: 'TGDD',
     },
     avatar: {
+
       public_id: {
         type: String,
         required: true,

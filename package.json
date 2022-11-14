@@ -6,6 +6,7 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "data:import": "node src/seeder/seeder ",
+        "build": "tsc",
         "data:destroy": "node src/seeder/seeder -d ",
         "start": "node index.js",
         "dev": "SET NODE_ENV=DEVELOPMENT& nodemon index.js",
@@ -19,6 +20,8 @@
         "argon2": "^0.29.1",
         "bcrypt": "^5.1.0",
         "bcryptjs": "^2.4.3",
+        "body-parser": "^1.20.1",
+        "cloudinary": "^1.32.0",
         "colors": "^1.4.0",
         "cookie-parser": "^1.4.6",
         "cors": "^2.8.5",
@@ -31,14 +34,15 @@
         "jsonwebtoken": "^8.5.1",
         "mongoose": "^6.5.4",
         "morgan": "^1.10.0",
+        "multer": "^1.4.5-lts.1",
+        "multer-storage-cloudinary": "^4.0.0",
         "nodemailer": "^6.8.0",
         "nodemon": "^2.0.19",
         "passport": "^0.6.0",
         "passport-google-oauth20": "^2.0.0",
-        "slugify": "^1.6.5"
+        "slugify": "^1.6.5",
         "swagger-autogen": "^2.22.0",
         "swagger-jsdoc": "^6.2.5",
-        "swagger-ui-express": "^4.5.0"
-
+        "swagger-ui-express": "^4.6.0"
     }
 }

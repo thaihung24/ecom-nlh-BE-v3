@@ -7,10 +7,11 @@ const userRoute = require('./userRoute')
 const orderRoute = require('./orderRoute')
 const commentRoute = require('./commentRoute')
 const oauthRoute = require("./oauthRoute")
+
 function route(app) {
-  //Comment
-  app.use('/api/comments', commentRoute)
-    //Oder
+    //Comment
+    app.use('/api/comments', commentRoute)
+        //Oder
     app.use('/api/orders', orderRoute)
         //PAYPAL_CLIENT_ID
     app.get('/api/config/paypal', (req, res) => {
@@ -24,6 +25,11 @@ function route(app) {
 
     //product
     app.use('/api/products', productRoute)
+
+    // test
+    app.use('/test', (req, res) => {
+            res.json({ success: true, message: "Welcome nlh-ecom-system" })
+        })
         // main
     app.use('/', (req, res, next) => {
         next(new ErrorResponse(`Page not found`, 404, null, 'Not found'))
