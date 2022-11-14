@@ -2,9 +2,6 @@ const asyncHandler = require('express-async-handler')
 const catchAsyncHandler = require('../middleware/async')
 const ErrorResponse = require('../utils/ErrorResponse')
 const Comment = require('../models/comment/comment.js')
-const { reset } = require('nodemon')
-const { find } = require('../models/comment/comment.js')
-const { setRandomFallback } = require('bcryptjs')
 
 class commentControllers {
   // @desc Create new comment
