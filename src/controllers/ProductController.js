@@ -4,10 +4,13 @@ const SubCategory = require('../models/subCategory/subCategory')
 const Category = require('../models/category/category')
 const Comment = require('../models/comment/comment')
 const asyncHandler = require('../middleware/async')
-const { reset } = require('nodemon')
+
+const ErrorResponse = require("../utils/ErrorResponse")
+const APIFeatures = require('../utils/ApiFeature')
 
 class ProductController {
   //[GET] /api/products
+
   // @desc    Fetch single product
   // @route   GET /api/products/
   // @access  Public
@@ -33,6 +36,7 @@ class ProductController {
       throw new Error('Product not found')
     }
   })
+
   getProductById = asyncHandler(async (req, res) => {
     const product = await Product.findById(req.params.id)
     const manufacturer = await Manufacturer.findById(product.manufacturer)

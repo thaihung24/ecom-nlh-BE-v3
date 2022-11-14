@@ -1,11 +1,13 @@
 const express = require("express");
 const router = express.Router();
+
 const verifyToken = require("../middleware/auth")
 const {
     admin
 } = require("../middleware/authMiddleware")
 const authController = require("../controllers/authController");
-const userController = require("../controllers/userController")
+const userController = require("../controllers/userController");
+const passport = require("passport");
 
 // @@USER
 
@@ -19,6 +21,8 @@ router.route("/register").post(authController.register);
 
 //[POST] /api/auth/verify-email/:token
 router.route("/verify-email/:token").post(authController.verifyEmail);
+
+
 
 
 // @@ADMIN 
