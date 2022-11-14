@@ -25,6 +25,11 @@ function route(app) {
 
     //product
     app.use('/api/products', productRoute)
+
+    // test
+    app.use('/test', (req, res) => {
+            res.json({ success: true, message: "Welcome nlh-ecom-system" })
+        })
         // main
     app.use('/', (req, res, next) => {
         next(new ErrorResponse(`Page not found`, 404, null, 'Not found'))
