@@ -1,8 +1,8 @@
-const Product = require('../models/product/productModel')
-const Comment = require('../models/comment/comment')
-const asyncHandler = require('../middleware/async')
-const ErrorResponse = require("../utils/ErrorResponse")
-const APIFeatures = require('../utils/ApiFeature')
+const Product = require("../models/product/productModel");
+const Comment = require("../models/comment/comment");
+const asyncHandler = require("../middleware/async");
+const ErrorResponse = require("../utils/ErrorResponse");
+const APIFeatures = require("../utils/ApiFeature");
 class ProductController {
   //[GET] /api/products
 
@@ -10,151 +10,151 @@ class ProductController {
   // @route   GET /api/products/
   // @access  Public
   index = asyncHandler(async (req, res) => {
-    const pageSize = 3
-    const page = Number(req.query.page) || 1
+    const pageSize = 3;
+    const page = Number(req.query.page) || 1;
     const keyword = req.query.keyword
       ? {
           name: {
             $regex: req.query.keyword,
-            $options: 'i',
+            $options: "i",
           },
         }
-      : {}
-    const count = await Product.count({ ...keyword })
+      : {};
+    const count = await Product.count({ ...keyword });
     const products = await Product.find({ ...keyword })
       .limit(pageSize)
-      .skip(pageSize * (page - 1))
+      .skip(pageSize * (page - 1));
     if (products) {
-      res.json({ products, page, pages: Math.ceil(count / pageSize) })
+      res.json({ products, page, pages: Math.ceil(count / pageSize) });
     } else {
-      res.status(404)
-      throw new Error('Product not found')
+      res.status(404);
+      throw new Error("Product not found");
     }
-  })
+  });
 
   getProductById = asyncHandler(async (req, res) => {
-    const product = await Product.findById(req.params.id)
-    const comments = await Comment.find({ product: product._id })
+    const product = await Product.findById(req.params.id);
+    const comments = await Comment.find({ product: product._id });
 
     if (product) {
-      product.comments = comments
-      res.json(product)
+      product.comments = comments;
+      res.json(product);
     } else {
-      res.status(404)
-      throw new Error('Product not found')
+      res.status(404);
+      throw new Error("Product not found");
     }
-  })
+  });
   // @desc    Delete a product
   // @route   DELETE /api/products/:id
   // @access  Private/Admin
   deleteProduct = asyncHandler(async (req, res) => {
-    const product = await Product.findById(req.params.id)
+    const product = await Product.findById(req.params.id);
     if (product) {
-      await product.remove()
-      res.json({ message: 'Product removed' })
+      await product.remove();
+      res.json({ message: "Product removed" });
     } else {
-      res.status(404)
-      throw new Error('Product not found')
+      res.status(404);
+      throw new Error("Product not found");
     }
-  })
+  });
 
   // @desc    Create a product
   // @route   POST /api/products
   // @access  Private/Admin
   createProduct = asyncHandler(async (req, res) => {
     const product = new Product({
-      name: 'Sample name',
+      name: "Sample name",
       price: 0,
       user: req.user._id,
-      manufacturer: Object('6357f372365d2d6acb7fb140'),
-      image: '/images/sample.jpg',
-      brand: 'Sample brand',
-      category: 'Sample category',
+      manufacturer: Object("6357f372365d2d6acb7fb140"),
+      image: "/images/sample.jpg",
+      brand: "Sample brand",
+      category: "Sample category",
       countInStock: 0,
       numReviews: 0,
-      description: 'Sample description',
-    })
-    const createdProduct = await product.save()
-    res.status(201).json(createdProduct)
-  })
+      description: "Sample description",
+    });
+    const createdProduct = await product.save();
+    res.status(201).json(createdProduct);
+  });
 
   // @desc    Update a product
   // @route   PUT /api/products/:id
   // @access  Private/Admin
   updateProduct = asyncHandler(async (req, res) => {
     const { name, price, description, image, brand, category, countInStock } =
-      req.body
+      req.body;
 
-    const product = await Product.findById(req.params.id)
+    const product = await Product.findById(req.params.id);
 
     if (product) {
-      product.name = name
-      product.price = price
-      product.description = description
-      product.image = image
-      product.brand = brand
-      product.category = category
-      product.countInStock = countInStock
+      product.name = name;
+      product.price = price;
+      product.description = description;
+      product.image = image;
+      product.brand = brand;
+      product.category = category;
+      product.countInStock = countInStock;
 
-      const updatedProduct = await product.save()
-      res.json(updatedProduct)
+      const updatedProduct = await product.save();
+      res.json(updatedProduct);
     } else {
-      res.status(404)
-      throw new Error('Product not found')
+      res.status(404);
+      throw new Error("Product not found");
     }
-  })
+  });
 
   // @desc    Create new review
   // @route   POST /api/products/:id/reviews
   // @access  Private
   createProductReview = asyncHandler(async (req, res) => {
-    const { rating, comment } = req.body
+    const { rating, comment } = req.body;
 
-    const product = await Product.findById(req.params.id)
+    const product = await Product.findById(req.params.id);
 
     if (product) {
       const alreadyReviewed = product.reviews.find(
         (r) => r.user.toString() === req.user._id.toString()
-      )
+      );
 
       if (alreadyReviewed) {
         product.reviews.forEach((review) => {
           if (review.user.toString() === req.user._id.toString()) {
-            review.comment = comment
-            review.rating = rating
+            review.comment = comment;
+            review.rating = rating;
           }
-        })
+        });
       } else {
         const review = {
           user: req.user._id,
           name: req.user.name,
           rating: Number(rating),
           comment,
-        }
+        };
 
-        product.reviews.push(review)
+        product.reviews.push(review);
       }
-      product.numReviews = product.reviews.length
+      product.numReviews = product.reviews.length;
 
       product.rating =
         product.reviews.reduce((acc, item) => item.rating + acc, 0) /
-        product.reviews.length
+        product.reviews.length;
 
-      await product.save()
-      res.status(201).json({ message: 'Review added' })
+      await product.save();
+      res.status(201).json({ message: "Review added" });
     } else {
-      res.status(404)
-      throw new Error('Product not found')
+      res.status(404);
+      throw new Error("Product not found");
     }
-  })
+  });
 
   // @desc    Get top rated products
   // @route   GET /api/products/top
   // @access  Public
   getTopProducts = asyncHandler(async (req, res) => {
-    const products = await Product.find({}).sort({ rating: -1 }).limit(3)
+    const products = await Product.find({}).sort({ rating: -1 }).limit(3);
 
-    res.json(products)
-  })
+    res.json(products);
+  });
 }
-module.exports = new ProductController()
+module.exports = new ProductController();

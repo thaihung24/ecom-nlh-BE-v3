@@ -1,5 +1,6 @@
 // initial
 const express = require("express");
+const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const swaggerUI = require("swagger-ui-express");
 const swaggerJsDoc = require("swagger-jsdoc");
@@ -7,6 +8,13 @@ const swaggerJsDoc = require("swagger-jsdoc");
 // const endpointsFiles = ['./routers/personRouter.js']
 require("dotenv").config();
 const app = express();
+app.use(
+  bodyParser.urlencoded({
+    extended: true,
+  })
+);
+
+app.use(bodyParser.json());
 //options swagger
 
 const options = {
