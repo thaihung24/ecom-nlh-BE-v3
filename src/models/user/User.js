@@ -52,10 +52,13 @@ const UserSchema = new mongoose.Schema({
       public_id: {
         type: String,
         required: true,
+        default: 'avatars/muqwmegdp6xzikzgsdkw',
       },
       url: {
         type: String,
         required: true,
+        default:
+          'https://res.cloudinary.com/dw8fi9npd/image/upload/v1667137085/avatars/muqwmegdp6xzikzgsdkw.jpg',
       },
     },
     // role

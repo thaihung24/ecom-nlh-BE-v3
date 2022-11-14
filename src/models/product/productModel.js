@@ -85,7 +85,7 @@ const productSchema = mongoose.Schema(
     subCategory: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: 'Manufacturer',
+      ref: 'Subcategory',
     },
     comments: [],
     reviews: [reviewSchema],
