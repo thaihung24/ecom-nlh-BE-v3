@@ -59,6 +59,7 @@ class ProductController {
         comments: comments,
         rating: product.rating,
         price: product.price,
+        detailSpecs: product.detailSpecs,
         countInStock: product.countInStock,
         numberReview: product.numberReview,
         reviews: product.reviews,

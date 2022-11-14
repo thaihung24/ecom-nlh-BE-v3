@@ -33,11 +33,10 @@ class orderControllers {
       const createdOrder = await order.save()
       order.orderItems.map(async (item) => {
         const product = await Product.findById(item.product)
-
         product.productOptions.forEach((Option, index) => {
           if (Option._id.toString() === item.option.toString()) {
             Option.colors.forEach((color, i) => {
-              if (color.color.toString() === item.color.toString()) {
+              if (color._id.toString() === item.color.toString()) {
                 product.productOptions[index].colors[i].quantity -= item.qty
               }
             })
