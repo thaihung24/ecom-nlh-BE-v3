@@ -10,26 +10,25 @@ class ProductController {
   // @route   GET /api/products/
   // @access  Public
   index = asyncHandler(async (req, res) => {
-    const pageSize = 3;
-    const page = Number(req.query.page) || 1;
-    const keyword = req.query.keyword
-      ? {
-          name: {
-            $regex: req.query.keyword,
-            $options: "i",
-          },
-        }
-      : {};
-    const count = await Product.count({ ...keyword });
-    const products = await Product.find({ ...keyword })
-      .limit(pageSize)
-      .skip(pageSize * (page - 1));
-    if (products) {
-      res.json({ products, page, pages: Math.ceil(count / pageSize) });
-    } else {
-      res.status(404);
-      throw new Error("Product not found");
-    }
+    const size = req.query.size || 5;
+    const page = req.query.page || 1;
+
+    const apiFeatures = new APIFeatures(Product.find({}), req.query)
+      .search()
+      .filter();
+    let products = await apiFeatures.query;
+    // Pagination
+
+    if (!products) return next(new ErrorResponse("Product not found", 404));
+
+    apiFeatures.pagination(size, page);
+    products = await apiFeatures.query.clone();
+
+    res.status(200).json({
+      success: true,
+      products,
+      message: "Get products",
+    });
   });
 
   getProductById = asyncHandler(async (req, res) => {
