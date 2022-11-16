@@ -4,7 +4,6 @@ const SubCategory = require('../models/subCategory/subCategory')
 const Category = require('../models/category/category')
 const Comment = require('../models/comment/comment')
 const asyncHandler = require('../middleware/async')
-const { reset } = require('nodemon')
 
 class ProductController {
   //[GET] /api/products
@@ -24,6 +23,7 @@ class ProductController {
       : {}
     const count = await Product.count({ ...keyword })
     const products = await Product.find({ ...keyword })
+      .select('name price rating')
       .limit(pageSize)
       .skip(pageSize * (page - 1))
     if (products) {
@@ -48,6 +48,7 @@ class ProductController {
         manufacturer: manufacturer.name,
         name: product.name,
         image: product.image,
+        video: product.video,
         productOptions: product.productOptions,
         description: product.description,
         subCategory: subCategory.name,
@@ -72,17 +73,39 @@ class ProductController {
   // @route   GET /api/products/category/:slug
   // @access  Public
   getProductsByCategory = asyncHandler(async (req, res) => {
-    const product = await Product.find({}).populate({
-      path: 'subCategory',
-      match: { category: req.params.slug },
+    const product = await Product.find({})
+      .populate({
+        path: 'subCategory',
+        match: { category: req.params.slug },
+      })
+      .select('name image rating price ')
+    const result = []
+    product.map((item, index) => {
+      if (item.subCategory !== null) {
+        result.push(item)
+      }
     })
-    // .find({ subCategory: { $ne: null } })
-    // .select('subCategory')
-    // .find({
 
-    // })
-
-    res.json(product)
+    res.json(result)
+  })
+  // @desc    get product By category
+  // @route   GET /api/products/subcategory/:id
+  // @access  Public
+  getProductsBySubCategory = asyncHandler(async (req, res) => {
+    const product = await Product.find({
+      subCategory: req.params.id,
+    }).select('name image rating price')
+    if (product) {
+      res.status(201).json({
+        success: true,
+        product,
+      })
+    } else {
+      res.status(404).json({
+        success: false,
+        message: 'product not found',
+      })
+    }
   })
   // @desc    Delete a product
   // @route   DELETE /api/products/:id
@@ -135,7 +158,6 @@ class ProductController {
       product.brand = brand
       product.category = category
       product.countInStock = countInStock
-
       const updatedProduct = await product.save()
       res.json(updatedProduct)
     } else {
@@ -168,6 +190,7 @@ class ProductController {
         const review = {
           user: req.user._id,
           name: req.user.name,
+          avatarUrl: req.user.avatar.url,
           rating: Number(rating),
           comment,
         }
