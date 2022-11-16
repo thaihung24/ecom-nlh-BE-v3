@@ -5,6 +5,10 @@ const replySchema = mongoose.Schema({
     required: true,
     ref: "User",
   },
+  avatarUrl: {
+    type: String,
+    required: true,
+  },
   name: {
     type: String,
     required: true,
@@ -25,6 +29,10 @@ const commentSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
       ref: "Product",
+    },
+    avatarUrl: {
+      type: String,
+      required: true,
     },
     name: {
       type: String,

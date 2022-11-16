@@ -4,44 +4,39 @@ const SubCategory = require("../models/subCategory/subCategory");
 const Category = require("../models/category/category");
 const Comment = require("../models/comment/comment");
 const asyncHandler = require("../middleware/async");
-
-const ErrorResponse = require("../utils/ErrorResponse");
-const APIFeatures = require("../utils/ApiFeature");
+const { reset } = require("nodemon");
 
 class ProductController {
   //[GET] /api/products
-
   // @desc    Fetch single product
   // @route   GET /api/products/
   // @access  Public
   index = asyncHandler(async (req, res) => {
-    const size = req.query.size || 5;
-    const page = req.query.page || 1;
-
-    const apiFeatures = new APIFeatures(Product.find({}), req.query)
-      .search()
-      .filter();
-    let products = await apiFeatures.query;
-    // Pagination
-
-    if (!products) return next(new ErrorResponse("Product not found", 404));
-
-    apiFeatures.pagination(size, page);
-    products = await apiFeatures.query.clone();
-
-    res.status(200).json({
-      success: true,
-      products,
-      message: "Get products",
-    });
+    const pageSize = 10;
+    const page = Number(req.query.page) || 1;
+    const keyword = req.query.keyword
+      ? {
+          name: {
+            $regex: req.query.keyword,
+            $options: "i",
+          },
+        }
+      : {};
+    const count = await Product.count({ ...keyword });
+    const products = await Product.find({ ...keyword })
+      .limit(pageSize)
+      .skip(pageSize * (page - 1));
+    if (products) {
+      res.json({ products, page, pages: Math.ceil(count / pageSize) });
+    } else {
+      res.status(404);
+      throw new Error("Product not found");
+    }
   });
-
   getProductById = asyncHandler(async (req, res) => {
     const product = await Product.findById(req.params.id);
     const manufacturer = await Manufacturer.findById(product.manufacturer);
-    product.manufacturer = manufacturer.name;
     const subCategory = await SubCategory.findById(product.subCategory);
-    product.subCategory = subCategory.name;
     const category = await Category.findById(subCategory.category);
     const comments = await Comment.find({ product: product._id });
 
@@ -171,6 +166,7 @@ class ProductController {
         const review = {
           user: req.user._id,
           name: req.user.name,
+          avatarUrl: req.user.avatar.url,
           rating: Number(rating),
           comment,
         };
