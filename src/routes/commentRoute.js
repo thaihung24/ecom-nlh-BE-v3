@@ -11,6 +11,7 @@ router
   .route('/:id')
   .put(verifyToken, commentControllers.updateComment)
   .delete(verifyToken, commentControllers.deleteComment)
+  .get(commentControllers.getCommentByProductId)
 router.route('/').post(verifyToken, commentControllers.addComment)
 
 module.exports = router

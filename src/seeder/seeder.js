@@ -98,7 +98,7 @@ const importData = async () => {
         ...product,
         user: adminUser,
         manufacturer: manufacturerId,
-        subCategory: createSubcategory[1]._id,
+        subCategory: createSubcategory[0]._id,
       }
     })
 

@@ -12,6 +12,7 @@ class commentControllers {
     const cmt = {
       user: req.user._id,
       name: req.user.name,
+      avatarUrl: req.user.avatar.url,
       product: Object(productId),
       comment,
     }
@@ -77,6 +78,7 @@ class commentControllers {
       const replyComment = {
         user: req.user._id,
         name: req.user.name,
+        avatarUrl: req.user.avatar.url,
         reply,
       }
       comment.replies.push(replyComment)
@@ -120,6 +122,20 @@ class commentControllers {
       res.status(404).json({
         success: false,
         message: 'ERROR: authenticated',
+      })
+    }
+  })
+  getCommentByProductId = asyncHandler(async (req, res) => {
+    const comment = await Comment.find({ product: req.params.id })
+    if (comment) {
+      res.status(201).json({
+        success: true,
+        comment,
+      })
+    } else {
+      res.status(404).json({
+        success: false,
+        message: 'not found message',
       })
     }
   })
