@@ -5,6 +5,7 @@ const verifyToken = require('../middleware/auth')
 const { admin } = require('../middleware/authMiddleware.js')
 
 router.route('/topreviews').get(productController.getTopProducts)
+router.route('/category/:slug').get(productController.getProductsByCategory)
 router
   .route('/')
   .get(productController.index)

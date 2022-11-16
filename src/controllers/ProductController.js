@@ -68,6 +68,22 @@ class ProductController {
       throw new Error('Product not found')
     }
   })
+  // @desc    get product By category
+  // @route   GET /api/products/category/:slug
+  // @access  Public
+  getProductsByCategory = asyncHandler(async (req, res) => {
+    const product = await Product.find({}).populate({
+      path: 'subCategory',
+      match: { category: req.params.slug },
+    })
+    // .find({ subCategory: { $ne: null } })
+    // .select('subCategory')
+    // .find({
+
+    // })
+
+    res.json(product)
+  })
   // @desc    Delete a product
   // @route   DELETE /api/products/:id
   // @access  Private/Admin
@@ -160,9 +176,11 @@ class ProductController {
       }
       product.numReviews = product.reviews.length
 
-      product.rating =
-        product.reviews.reduce((acc, item) => item.rating + acc, 0) /
-        product.reviews.length
+      product.rating = product.reviews.reduce(
+        (acc, item) => item.rating + acc,
+        0
+      )
+      product.reviews.length
 
       await product.save()
       res.status(201).json({ message: 'Review added' })

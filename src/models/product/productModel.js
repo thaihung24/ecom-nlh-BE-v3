@@ -29,6 +29,13 @@ const reviewSchema = mongoose.Schema({
 //   },
 //   images: [],
 // },
+// const categorySchema = mongoose.Schema({
+//   subCategory: {
+//     type: mongoose.Schema.Types.ObjectId,
+//     required: true,
+//   },
+//   ca,
+// })
 const colorSchema = mongoose.Schema({
   color: {
     type: String,
@@ -102,6 +109,23 @@ const productSchema = mongoose.Schema(
       required: true,
       ref: 'Subcategory',
     },
+    // category: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   required: true,
+    //   ref: 'Category',
+    // },
+    // category: {
+    //   category: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     required: true,
+    //     ref: 'Category',
+    //   },
+    //   subCategory: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     required: true,
+    //     ref: 'SubCategory',
+    //   },
+    // },
     comments: [],
     reviews: [reviewSchema],
     rating: {
