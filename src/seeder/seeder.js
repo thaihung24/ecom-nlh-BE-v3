@@ -57,49 +57,48 @@ const importData = async () => {
     })
     const createSubcategory = await subCategory.insertMany(sampleSubCategories)
     console.log('Inserted subCategory')
-    const sampleOptions = productOptions.map((option) => {
-      const colors = []
-      createColor.map((color) => {
-        if (color.name === 'Vàng') {
-          const value = {
-            color: createColor[0]._id,
-            quantity: 10,
-            images: image.imagesId1,
-          }
-          colors.push(value)
-        } else if (color.name === 'Bạc') {
-          const value = {
-            color: createColor[1]._id,
-            quantity: 10,
-            images: image.imagesId2,
-          }
-          colors.push(value)
-        } else if (color.name === 'Trắng') {
-          const value = {
-            color: createColor[2]._id,
-            quantity: 10,
-            images: image.imagesId3,
-          }
-          colors.push(value)
-        } else if (color.name === 'Tím') {
-          const value = {
-            color: createColor[3]._id,
-            quantity: 10,
-            images: image.imagesId4,
-          }
-          colors.push(value)
-        }
-      })
+    // const sampleOptions = productOptions.map((option) => {
+    //   const colors = []
+    //   createColor.map((color) => {
+    //     if (color.name === 'Vàng') {
+    //       const value = {
+    //         color: createColor[0]._id,
+    //         quantity: 10,
+    //         images: image.imagesId1,
+    //       }
+    //       colors.push(value)
+    //     } else if (color.name === 'Bạc') {
+    //       const value = {
+    //         color: createColor[1]._id,
+    //         quantity: 10,
+    //         images: image.imagesId2,
+    //       }
+    //       colors.push(value)
+    //     } else if (color.name === 'Trắng') {
+    //       const value = {
+    //         color: createColor[2]._id,
+    //         quantity: 10,
+    //         images: image.imagesId3,
+    //       }
+    //       colors.push(value)
+    //     } else if (color.name === 'Tím') {
+    //       const value = {
+    //         color: createColor[3]._id,
+    //         quantity: 10,
+    //         images: image.imagesId4,
+    //       }
+    //       colors.push(value)
+    //     }
+    //   })
 
-      return { ...option, colors: colors }
-    })
+    //   return { ...option, colors: colors }
+    // })
     const sampleProducts = products.map((product) => {
       return {
         ...product,
         user: adminUser,
         manufacturer: manufacturerId,
         subCategory: createSubcategory[1]._id,
-        productOptions: sampleOptions,
       }
     })
 

@@ -18,7 +18,28 @@ const reviewSchema = mongoose.Schema({
     required: true,
   },
 });
-
+// {
+//   color: {
+//     type: mongoose.Schema,
+//   },
+//   quantity: {
+//     type: Number,
+//     required: true,
+//     default: 0,
+//   },
+//   images: [],
+// },
+const colorSchema = mongoose.Schema({
+  color: {
+    type: String,
+  },
+  quantity: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  images: [],
+});
 const imageSchema = mongoose.Schema({
   urlImage: {
     type: String,
@@ -41,21 +62,15 @@ const optionSchema = mongoose.Schema({
     required: true,
     default: 0,
   },
-  colors: [
-    {
-      color: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: "Color",
-      },
-      quantity: {
-        type: Number,
-        required: true,
-        default: 0,
-      },
-      images: [imageSchema],
-    },
-  ],
+  colors: [colorSchema],
+});
+const detailSchema = mongoose.Schema({
+  name: {
+    type: String,
+  },
+  value: {
+    type: String,
+  },
 });
 const productSchema = mongoose.Schema(
   {
@@ -85,7 +100,7 @@ const productSchema = mongoose.Schema(
     subCategory: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: "Manufacturer",
+      ref: "Subcategory",
     },
     comments: [],
     reviews: [reviewSchema],
@@ -109,6 +124,7 @@ const productSchema = mongoose.Schema(
       required: true,
       default: 0,
     },
+    detailSpecs: [detailSchema],
   },
   {
     timestamps: true,

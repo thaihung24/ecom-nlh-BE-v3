@@ -1,8 +1,13 @@
 const Product = require("../models/product/productModel");
+const Manufacturer = require("../models/manufacturer/manufacturer");
+const SubCategory = require("../models/subCategory/subCategory");
+const Category = require("../models/category/category");
 const Comment = require("../models/comment/comment");
 const asyncHandler = require("../middleware/async");
+
 const ErrorResponse = require("../utils/ErrorResponse");
 const APIFeatures = require("../utils/ApiFeature");
+
 class ProductController {
   //[GET] /api/products
 
@@ -33,11 +38,34 @@ class ProductController {
 
   getProductById = asyncHandler(async (req, res) => {
     const product = await Product.findById(req.params.id);
+    const manufacturer = await Manufacturer.findById(product.manufacturer);
+    product.manufacturer = manufacturer.name;
+    const subCategory = await SubCategory.findById(product.subCategory);
+    product.subCategory = subCategory.name;
+    const category = await Category.findById(subCategory.category);
     const comments = await Comment.find({ product: product._id });
 
     if (product) {
-      product.comments = comments;
-      res.json(product);
+      const result = {
+        _id: product._id,
+        manufacturer: manufacturer.name,
+        name: product.name,
+        image: product.image,
+        productOptions: product.productOptions,
+        description: product.description,
+        subCategory: subCategory.name,
+        category: category.name,
+        comments: comments,
+        rating: product.rating,
+        price: product.price,
+        detailSpecs: product.detailSpecs,
+        countInStock: product.countInStock,
+        numberReview: product.numberReview,
+        reviews: product.reviews,
+      };
+      // product.comments = comments
+      // res.json({ ...product, category: category.name })
+      res.status(200).json(result);
     } else {
       res.status(404);
       throw new Error("Product not found");
