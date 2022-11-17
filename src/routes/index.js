@@ -7,6 +7,8 @@ const userRoute = require('./userRoute')
 const orderRoute = require('./orderRoute')
 const commentRoute = require('./commentRoute')
 const oauthRoute = require("./oauthRoute")
+const cartRoute = require("./cartRoute")
+
 
 function route(app) {
     //Comment
@@ -25,6 +27,9 @@ function route(app) {
 
     //product
     app.use('/api/products', productRoute)
+
+    //product
+    app.use('/api/cart', cartRoute)
 
     // test
     app.use('/test', (req, res) => {

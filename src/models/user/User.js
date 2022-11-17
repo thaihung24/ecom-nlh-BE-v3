@@ -24,10 +24,6 @@ const UserSchema = new mongoose.Schema({
         select: false,
     },
     addresses: [{
-        addressID: {
-            type: Number,
-            default: 0,
-        },
         idDefault: {
             type: Boolean,
             default: false,
@@ -49,18 +45,16 @@ const UserSchema = new mongoose.Schema({
         default: 'TGDD',
     },
     avatar: {
-
-      public_id: {
-        type: String,
-        required: true,
-        default: 'avatars/muqwmegdp6xzikzgsdkw',
-      },
-      url: {
-        type: String,
-        required: true,
-        default:
-          'https://res.cloudinary.com/dw8fi9npd/image/upload/v1667137085/avatars/muqwmegdp6xzikzgsdkw.jpg',
-      },
+        public_id: {
+            type: String,
+            required: true,
+            default: 'avatars/muqwmegdp6xzikzgsdkw',
+        },
+        url: {
+            type: String,
+            required: true,
+            default: 'https://res.cloudinary.com/dw8fi9npd/image/upload/v1667137085/avatars/muqwmegdp6xzikzgsdkw.jpg',
+        },
     },
     // role
     isAdmin: {
@@ -143,6 +137,6 @@ UserSchema.methods.verifyEmailToken = function() {
 }
 
 // exports
-let User = mongoose.model('users', UserSchema)
+let User = mongoose.model('User', UserSchema)
 module.exports = User
 module.exports.schema = UserSchema

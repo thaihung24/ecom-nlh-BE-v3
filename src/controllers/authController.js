@@ -8,6 +8,7 @@ const User = require('../models/user/User')
 const sendEmail = require('../utils/sendEmail')
 const generateToken = require('../utils/generateToken.js')
 const passport = require('passport')
+const Address = require('../models/user/Address')
 class authController {
     // [POST] /login
     login = catchAsyncHandler(async(req, res, next) => {
@@ -35,13 +36,11 @@ class authController {
     register = catchAsyncHandler(async(req, res, next) => {
             const {
                 email,
-                gender,
-                name,
-                phone,
                 password,
-                address,
-                firstName,
-                lastName,
+                gender,
+                addressForm,
+                phone,
+                name,
             } = req.body
             if (!email | !password) {
                 return next(new ErrorResponse(`Missing email or password`, 400))
@@ -59,16 +58,16 @@ class authController {
                 gender,
                 phone,
                 name,
-                firstName,
-                lastName,
-                fullName: `${firstName} ${lastName}`,
             })
 
+            const newAddress = await Address.create(addressForm.detailAddress)
+            addressForm.detailAddress = newAddress
             newUser.addresses.push({
-                idDefault: true,
-                address: address,
+                ...addressForm,
+                address: `${addressForm.address}, ${newAddress.ward.wardName}, ${newAddress.district.districtName}, ${newAddress.province.provinceName}`,
+                detailAddress: newAddress,
             })
-
+            console.log(newUser)
             const verifyToken = newUser.verifyEmailToken()
             await newUser.save()
 
@@ -86,12 +85,12 @@ class authController {
                 })
                 res.status(200).json({
                     success: true,
+                    user: newUser,
                     message: `Email sent to: ${newUser.email}, account will be removed from system after 30 minutes without verify`,
                 })
             } catch (e) {
                 newUser.emailCodeExpires = undefined
                 newUser.emailCodeToken = undefined
-                User.insert
                 await newUser.save({
                     validateBeforeSave: false,
                 })

@@ -57,7 +57,6 @@ class userControllers {
                     newAddress
                 } = req.body
                 if (editAddress) {
-                    const newAddresses = user.addresses.find(address => address.detailAddress._id == editAddress)
                     Address.findByIdAndUpdate(editAddress, {
                         ...newAddress.detailAddress
                     }, (err, res) => {
@@ -113,7 +112,7 @@ class userControllers {
             return res.status(200).json({
                 success: true,
                 message: `Avatar Updated`,
-                avatar: result.avatar.url
+                avatar: result.avatar
             })
         })
     })
@@ -168,7 +167,7 @@ class userControllers {
                 res.status(404)
                 throw new Error('User not found')
             }
-            res.json(users)
+            res.json(user)
         })
         //@desc GET  user
         //@route GET / api/users/:id
