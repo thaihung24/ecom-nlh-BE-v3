@@ -125,6 +125,20 @@ class commentControllers {
       });
     }
   });
+  getCommentByProductId = asyncHandler(async (req, res) => {
+    const comment = await Comment.find({ product: req.params.id });
+    if (comment) {
+      res.status(201).json({
+        success: true,
+        comment,
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "not found message",
+      });
+    }
+  });
 }
 
 module.exports = new commentControllers();

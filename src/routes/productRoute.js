@@ -7,6 +7,9 @@ const { admin } = require("../middleware/authMiddleware.js");
 router.route("/topreviews").get(productController.getTopProducts);
 router.route("/category/:slug").get(productController.getProductsByCategory);
 router
+  .route("/subcategory/:id")
+  .get(productController.getProductsBySubCategory);
+router
   .route("/")
   .get(productController.index)
   .post(verifyToken, admin, productController.createProduct);

@@ -1,45 +1,32 @@
 const mongoose = require("mongoose");
 
-const reviewSchema = mongoose.Schema({
-  user: {
-    type: String,
-    required: true,
+const reviewSchema = mongoose.Schema(
+  {
+    user: {
+      type: String,
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    avatarUrl: {
+      type: String,
+      required: true,
+    },
+    rating: {
+      type: Number,
+      required: true,
+    },
+    comment: {
+      type: String,
+      required: true,
+    },
   },
-  name: {
-    type: String,
-    required: true,
-  },
-  avatarUrl: {
-    type: String,
-    required: true,
-  },
-  rating: {
-    type: Number,
-    required: true,
-  },
-  comment: {
-    type: String,
-    required: true,
-  },
-});
-// {
-//   color: {
-//     type: mongoose.Schema,
-//   },
-//   quantity: {
-//     type: Number,
-//     required: true,
-//     default: 0,
-//   },
-//   images: [],
-// },
-// const categorySchema = mongoose.Schema({
-//   subCategory: {
-//     type: mongoose.Schema.Types.ObjectId,
-//     required: true,
-//   },
-//   ca,
-// })
+  {
+    timestamps: true,
+  }
+);
 const colorSchema = mongoose.Schema({
   color: {
     type: String,
@@ -103,6 +90,10 @@ const productSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    // video: {
+    //   type: String,
+    //   required: true,
+    // },
     productOptions: [optionSchema],
     description: {
       type: String,
@@ -113,23 +104,6 @@ const productSchema = mongoose.Schema(
       required: true,
       ref: "Subcategory",
     },
-    // category: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   required: true,
-    //   ref: 'Category',
-    // },
-    // category: {
-    //   category: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     required: true,
-    //     ref: 'Category',
-    //   },
-    //   subCategory: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     required: true,
-    //     ref: 'SubCategory',
-    //   },
-    // },
     comments: [],
     reviews: [reviewSchema],
     rating: {
