@@ -32,7 +32,6 @@ const orderSchema = mongoose.Schema(
         color: {
           type: mongoose.Schema.Types.ObjectId,
           required: true,
-          ref: 'Color',
         },
         option: {
           type: mongoose.Schema.Types.ObjectId,
