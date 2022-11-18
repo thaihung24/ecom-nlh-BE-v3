@@ -7,8 +7,6 @@ const User = require("../models/user/User");
 //
 const sendEmail = require("../utils/sendEmail");
 const generateToken = require("../utils/generateToken.js");
-const passport = require("passport");
-const Address = require("../models/user/Address");
 class authController {
   // [POST] /login
   login = catchAsyncHandler(async (req, res, next) => {
@@ -118,6 +116,7 @@ class authController {
   googleAuth = catchAsyncHandler(async (req, res, next) => {
     return passport.authenticate("google");
   });
+  //
 }
 
 module.exports = new authController();
