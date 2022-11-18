@@ -15,6 +15,16 @@ const ItemSchema = mongoose.Schema({
       type: String,
       required: true,
     },
+    info: {
+      colorName: {
+        type: String,
+        required: true,
+      },
+      optionName: {
+        type: String,
+        required: true,
+      },
+    },
     price: {
       type: Number,
       required: true,

@@ -7,7 +7,6 @@ const Product = require('../models/product/productModel')
 class orderControllers {
   addOrderItems = asyncHandler(async (req, res) => {
     const {
-      orderItems,
       shippingAddress,
       paymentMethod,
       itemsPrice,
@@ -15,12 +14,17 @@ class orderControllers {
       shippingPrice,
       totalPrice,
     } = req.body
+    const items = await Item.find({ user: req.user._id })
 
-    if (orderItems && orderItems.length === 0) {
+    if (items && items.length === 0) {
       res.status(400)
       throw new Error(` no Order item `)
       return
     } else {
+      const orderItems = []
+      items.map((item) => {
+        orderItems.push(item.item)
+      })
       const order = new Order({
         orderItems,
         user: req.user._id,
@@ -39,7 +43,8 @@ class orderControllers {
             if (Option._id.toString() === item.option.toString()) {
               Option.colors.forEach((color, i) => {
                 if (color._id.toString() === item.color.toString()) {
-                  product.productOptions[index].colors[i].quantity -= item.qty
+                  product.productOptions[index].colors[i].quantity -=
+                    item.quantity
                 }
               })
             }
