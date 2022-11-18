@@ -1,7 +1,8 @@
 const ErrorResponse = require('../utils/ErrorResponse')
 const User = require('../models/user/User')
+const Address = require('../models/user/Address')
 const catchAsyncHandler = require('../middleware/async')
-const generateToken = require('../utils/generateToken')
+
 class userControllers {
   //@desc GET user profile
   //@route POST / api/users/profile
@@ -18,27 +19,118 @@ class userControllers {
     })
   })
   //@desc UPDATE user profile
-  //@route PUT / api/users/profile
+  //@route PUT api/users/profile
   //@access Private
-  updateUserProfile = catchAsyncHandler(async (req, res) => {
+  updateUserProfile = catchAsyncHandler(async (req, res, next) => {
     const user = await User.findById(req.user._id)
     if (!user) {
       return next(new ErrorResponse('User not found', 401))
     }
-    user.name = req.body.name || user.name
-    user.email = req.body.email || user.email
-    if (req.body.password) {
-      user.password = req.body.password
+    //
+    const { addressID, name, phone, gender, addresses, isNew } = req.body
+
+    user.name = name || user.name
+    user.phone = phone || user.phone
+    user.gender = gender || user.gender
+    //
+    if (isNew) {
+      // Add address
+      const address = await Address.create({
+        ...addresses[0].detailAddress,
+      })
+      user.addresses.push({
+        ...addresses[0],
+        detailAddress: address,
+      })
+    } else {
+      // Update address
+      const { editAddress, newAddress } = req.body
+      if (editAddress) {
+        Address.findByIdAndUpdate(
+          editAddress,
+          {
+            ...newAddress.detailAddress,
+          },
+          (err, res) => {
+            if (err) return next(new ErrorResponse('Cant update address', 400))
+          }
+        )
+
+        user.addresses.forEach((address) => {
+          if (address.detailAddress._id == editAddress) {
+            address.address = newAddress.address
+          }
+        })
+      }
     }
-    const updateUser = await user.save()
+
+    const updateUser = await user.save({
+      validateBeforeSave: false,
+    })
+
     res.status(200).json({
-      _id: updateUser._id,
-      name: updateUser.name,
-      email: updateUser.email,
-      isAdmin: updateUser.isAdmin,
+      success: true,
+      message: 'User updated',
+      user: updateUser,
+    })
+  })
+  // @desc UPDATE User avatar picture
+  //@route PUT api/users/avatar
+  //@access Private
+  updateUserAvatar = catchAsyncHandler(async (req, res, next) => {
+    const user = await User.findById(req.user._id)
+    if (!user) {
+      return next(new ErrorResponse('User not found', 401))
+    }
+    // req.file
+    // {
+    //     fieldname: 'image',
+    //     originalname: 'táº£i xuá»\x91ng.png',
+    //     encoding: '7bit',
+    //     mimetype: 'image/png',
+    //     path: 'https://res.cloudinary.com/dw8fi9npd/image/upload/v1668409911/userAvatar/636ca45b5f202794bb590934.png',
+    //     size: 7954,
+    //     filename: 'userAvatar/636ca45b5f202794bb590934'
+    //   }
+    user.avatar.url = req.file.path
+    user.avatar.public_id = user._id
+    user.save((err, result) => {
+      if (err) {
+        return res.status(500).json({
+          success: false,
+          message: `Try again. Cant update avatar: ${err.message}`,
+          avatar: result.avatar.url,
+        })
+      }
+      return res.status(200).json({
+        success: true,
+        message: `Avatar Updated`,
+        avatar: result.avatar,
+      })
     })
   })
 
+  // ##DELETE ADDRESS
+  // DELETE /api/users/address/:addressID
+  deleteAddress = catchAsyncHandler(async (req, res) => {
+    const { addressID } = req.params
+    const user = await User.findById(req.user.id)
+
+    const addresses = user.addresses.filter((v) => {
+      return v.detailAddress._id.toString() != addressID
+    })
+
+    user.addresses = addresses
+
+    await user.save({
+      validateBeforeSave: false,
+    })
+
+    res.status(200).json({
+      success: true,
+      message: 'Address deleted',
+    })
+  })
   //@desc GET all user profile
   //@route GET / api/users
   //@access Private
@@ -57,12 +149,14 @@ class userControllers {
     const user = await User.findById(req.params.id)
     if (user) {
       await user.remove()
-      res.json({ message: 'User removed' })
+      res.json({
+        message: 'User removed',
+      })
     } else {
       res.status(404)
       throw new Error('User not found')
     }
-    res.json(users)
+    res.json(user)
   })
   //@desc GET  user
   //@route GET / api/users/:id

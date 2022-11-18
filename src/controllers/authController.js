@@ -29,16 +29,7 @@ class authController {
   })
   //[POST] /register
   register = catchAsyncHandler(async (req, res, next) => {
-    const {
-      email,
-      gender,
-      name,
-      phone,
-      password,
-      address,
-      firstName,
-      lastName,
-    } = req.body
+    const { email, password, gender, addressForm, phone, name } = req.body
     if (!email | !password) {
       return next(new ErrorResponse(`Missing email or password`, 400))
     }
@@ -55,26 +46,24 @@ class authController {
       gender,
       phone,
       name,
-      firstName,
-      lastName,
-      fullName: `${firstName} ${lastName}`,
     })
 
-    const newAddress = {
-      address: address,
-      idDefault: true,
-    }
-
-    newUser.addresses.push(newAddress)
-
+    const newAddress = await Address.create(addressForm.detailAddress)
+    addressForm.detailAddress = newAddress
+    newUser.addresses.push({
+      ...addressForm,
+      address: `${addressForm.address}, ${newAddress.ward.wardName}, ${newAddress.district.districtName}, ${newAddress.province.provinceName}`,
+      detailAddress: newAddress,
+    })
+    console.log(newUser)
     const verifyToken = newUser.verifyEmailToken()
     await newUser.save()
 
     // send email
-    const resetUrl = `${req.protocol}://${req.get(
-      'host'
-    )}/api/auth/verify-email/${verifyToken}`
-    const message = `Your verify token is as follow:\n\n${resetUrl}\n\nLink will be expired after 30 minutes\n\nIf you have not requested this email, then ignore it.`
+    // const resetUrl = `${req.protocol}://${req.get('host')}/api/auth/verify-email/${verifyToken}`;
+    const resetUrl = `${process.env.CLIENT_URL}/api/auth/verify-email/${verifyToken}`
+
+    const message = `Your verify token for active ${newUser.fullName} is as follow:\n\n${resetUrl}\n\nLink will be expired after 30 minutes\n\nIf you have not requested this email, then ignore it.`
 
     try {
       await sendEmail({
@@ -84,12 +73,12 @@ class authController {
       })
       res.status(200).json({
         success: true,
+        user: newUser,
         message: `Email sent to: ${newUser.email}, account will be removed from system after 30 minutes without verify`,
       })
     } catch (e) {
       newUser.emailCodeExpires = undefined
       newUser.emailCodeToken = undefined
-      User.insert
       await newUser.save({
         validateBeforeSave: false,
       })
@@ -121,6 +110,11 @@ class authController {
       validateBeforeSave: false,
     })
     sendToken(user, 200, res)
+  })
+  //#### OAUTH2
+  // Google
+  googleAuth = catchAsyncHandler(async (req, res, next) => {
+    return passport.authenticate('google')
   })
   //
 }
