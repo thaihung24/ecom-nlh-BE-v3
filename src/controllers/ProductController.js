@@ -201,7 +201,7 @@ class ProductController {
         (acc, item) => item.rating + acc,
         0
       );
-      product.reviews.length;
+      product.rating = product.rating / product.reviews.length;
 
       await product.save();
       res.status(201).json({ message: "Review added" });

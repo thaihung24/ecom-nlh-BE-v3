@@ -33,12 +33,11 @@ class cartControllers {
           item: {
             price: option.price,
             image: product.image,
-            name:
-              product.name +
-              " " +
-              option.productOptionName +
-              " màu " +
-              color.color,
+            name: product.name,
+            info: {
+              optionName: option.productOptionName,
+              colorName: color.color,
+            },
             product: item.product,
             option: item.option,
             color: item.color,
@@ -56,7 +55,7 @@ class cartControllers {
       //Get
       const Cart = await Item.find({
         user: req.user._id,
-      });
+      }).select("item");
       res.status(200).json({
         success: true,
         cart: Cart,
