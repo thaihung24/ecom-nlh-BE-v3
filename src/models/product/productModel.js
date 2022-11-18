@@ -104,7 +104,6 @@ const productSchema = mongoose.Schema(
       required: true,
       ref: "Subcategory",
     },
-    comments: [],
     reviews: [reviewSchema],
     rating: {
       type: Number,

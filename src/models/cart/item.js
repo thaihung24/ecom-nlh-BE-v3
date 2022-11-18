@@ -5,12 +5,24 @@ const ItemSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
-  quantity: {
-    type: Number,
-    default: 1,
-    required: [true, 'Missing quantity line-item'],
-  },
   item: {
+    quantity: {
+      type: Number,
+      default: 1,
+      required: [true, 'Missing quantity line-item'],
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    price: {
+      type: Number,
+      required: true,
+    },
+    image: {
+      type: String,
+      required: true,
+    },
     product: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
