@@ -1,9 +1,48 @@
 // initial
 const express = require("express");
+const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const swaggerUI = require("swagger-ui-express");
+const swaggerJsDoc = require("swagger-jsdoc");
+// const swaggerAutogen = require('swagger-autogen')()
+// const endpointsFiles = ['./routers/personRouter.js']
+require("dotenv").config();
+const app = express();
+app.use(
+  bodyParser.urlencoded({
+    extended: true,
+  })
+);
 
 app.use(bodyParser.json());
 //options swagger
+
+const options = {
+  definition: {
+    info: {
+      title: "TLCN K19 API",
+      version: "1.0.0",
+      description: "TLCN K19  Ecommerce API",
+    },
+    servers: ["http://localhost:5000"],
+  },
+  apis: ["./routes/*.js"],
+};
+const specs = swaggerJsDoc(options);
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
+
+const expressSession = require("express-session");
+app.use(
+  expressSession({
+    secret: process.env.EXPRESS_SESSION_SECRET,
+    resave: true,
+    saveUninitialized: true,
+  })
+);
+
+var passport = require("passport");
+app.use(passport.initialize());
+app.use(passport.session());
 
 //cors
 const cors = require("cors");
@@ -26,8 +65,6 @@ app.use(cookieParser());
 app.use(express.json());
 //routes
 const route = require("./src/routes");
-
-//routes
 
 route(app);
 
