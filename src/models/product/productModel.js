@@ -1,34 +1,32 @@
 const mongoose = require('mongoose')
 
-const reviewSchema = mongoose.Schema({
-  user: {
-    type: String,
-    required: true,
+const reviewSchema = mongoose.Schema(
+  {
+    user: {
+      type: String,
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    avatarUrl: {
+      type: String,
+      required: true,
+    },
+    rating: {
+      type: Number,
+      required: true,
+    },
+    comment: {
+      type: String,
+      required: true,
+    },
   },
-  name: {
-    type: String,
-    required: true,
-  },
-  rating: {
-    type: Number,
-    required: true,
-  },
-  comment: {
-    type: String,
-    required: true,
-  },
-})
-// {
-//   color: {
-//     type: mongoose.Schema,
-//   },
-//   quantity: {
-//     type: Number,
-//     required: true,
-//     default: 0,
-//   },
-//   images: [],
-// },
+  {
+    timestamps: true,
+  }
+)
 const colorSchema = mongoose.Schema({
   color: {
     type: String,
@@ -92,6 +90,10 @@ const productSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    // video: {
+    //   type: String,
+    //   required: true,
+    // },
     productOptions: [optionSchema],
     description: {
       type: String,
