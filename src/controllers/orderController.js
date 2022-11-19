@@ -4,8 +4,9 @@ const ErrorResponse = require('../utils/ErrorResponse')
 const Order = require('../models/order/orderModal')
 const Item = require('../models/cart/Item')
 const Product = require('../models/product/productModel')
+const Voucher = require('../models/voucher/voucher')
 class orderControllers {
-  addOrderItems = asyncHandler(async (req, res) => {
+  addOrderItems = asyncHandler(async (req, res, next) => {
     const {
       shippingAddress,
       paymentMethod,
@@ -13,6 +14,7 @@ class orderControllers {
       taxPrice,
       shippingPrice,
       totalPrice,
+      voucher,
     } = req.body
     const items = await Item.find({ user: req.user._id })
 
@@ -25,6 +27,16 @@ class orderControllers {
       items.map((item) => {
         orderItems.push(item.item)
       })
+      if (voucher) {
+        const findVoucher = await Voucher.findById(voucher)
+
+        if (findVoucher) {
+          findVoucher.limit -= 1
+          await findVoucher.save()
+        } else {
+          return next(new ErrorResponse('Voucher not found', 400))
+        }
+      }
       const order = new Order({
         orderItems,
         user: req.user._id,
@@ -34,6 +46,7 @@ class orderControllers {
         taxPrice,
         shippingPrice,
         totalPrice,
+        voucher,
       })
       const createdOrder = await order.save()
       if (createdOrder) {
@@ -53,6 +66,15 @@ class orderControllers {
         })
         await Item.deleteMany({ user: req.user._id })
         res.status(201).json(createdOrder)
+      } else {
+        if (voucher) {
+          const findVoucher = await Voucher.findById(voucher)
+          await findVoucher.save()
+          if (findVoucher) {
+            findVoucher.limit += 1
+          }
+        }
+        return next(new ErrorResponse('Add order fail', 400))
       }
     }
   })
@@ -100,9 +122,63 @@ class orderControllers {
     const orders = await Order.find({ user: req.user._id })
     res.json(orders)
   })
+  //@desc GET logged in user orders
+  //@route GET/api/orders/
+  //@access Private Admin
   getAllOrders = asyncHandler(async (req, res) => {
     const orders = await Order.find({})
     res.json(orders)
+  })
+  //@desc PUT order by ID
+  //@route PUT/api/orders/confirm/:id
+  //@access Private Admin
+  confirmOrder = asyncHandler(async (req, res, next) => {
+    const order = await Order.findById(req.params.id)
+    if (order) {
+      order.isConfirm = true
+      await order.save()
+      res.json({
+        success: true,
+        message: 'Order confirmed successfully',
+      })
+    } else {
+      return next(new ErrorResponse('Confirm failed', 404))
+    }
+  })
+
+  //@desc Update status
+  //@route PUT/api/orders/:id
+  //@access Private
+  //In body
+  /*
+  status:{
+    statusNow:"cancel",
+    description:"Ly do huy"
+  }
+  */
+  //in Body
+  updateStatusOrder = asyncHandler(async (req, res, next) => {
+    const order = await Order.findById(req.params.id)
+    if (order && order.isConfirm === false) {
+      order.status = req.body.status
+      const updateOrder = await order.save()
+      if (updateOrder) {
+        res.status(200).json({
+          success: true,
+          order: updateOrder,
+          message: 'update order successfully',
+        })
+      } else {
+        return next(new ErrorResponse('update failed', 404))
+      }
+    } else {
+      return next(
+        new ErrorResponse(
+          'update order not found or order was confirm by admin',
+          404
+        )
+      )
+    }
   })
 }
 

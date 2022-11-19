@@ -6,6 +6,23 @@ const orderSchema = mongoose.Schema(
       required: true,
       ref: 'users',
     },
+    isConfirm: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    status: {
+      statusNow: {
+        type: String,
+        required: true,
+        default: 'pending',
+      },
+      description: {
+        type: String,
+        required: true,
+        default: 'Đang đợi admin xử lý.',
+      },
+    },
     orderItems: [
       {
         name: {
@@ -105,6 +122,10 @@ const orderSchema = mongoose.Schema(
     },
     deliveredAt: {
       type: Date,
+    },
+    voucher: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Voucher',
     },
   },
   {
