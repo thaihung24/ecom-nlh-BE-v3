@@ -72,7 +72,7 @@ class cartControllers {
     if (cart && cart.user.toString() === req.user._id.toString()) {
       if (quantity > 0) {
         //update if quantity > 0
-        cart.quantity = quantity;
+        cart.item.quantity = quantity;
         await cart.save();
         res.status(200).json({
           success: true,
