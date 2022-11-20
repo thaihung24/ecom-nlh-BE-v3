@@ -3,14 +3,31 @@ const orderSchema = mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        ref: 'User',
+        ref: 'users',
+    },
+    isConfirm: {
+        type: Boolean,
+        required: true,
+        default: false,
+    },
+    status: {
+        statusNow: {
+            type: String,
+            required: true,
+            default: 'pending',
+        },
+        description: {
+            type: String,
+            required: true,
+            default: 'Đang đợi admin xử lý.',
+        },
     },
     orderItems: [{
         name: {
             type: String,
             required: true,
         },
-        qty: {
+        quantity: {
             type: Number,
             required: true,
         },
@@ -30,7 +47,6 @@ const orderSchema = mongoose.Schema({
         color: {
             type: mongoose.Schema.Types.ObjectId,
             required: true,
-            ref: 'Color',
         },
         option: {
             type: mongoose.Schema.Types.ObjectId,
@@ -103,6 +119,10 @@ const orderSchema = mongoose.Schema({
     },
     deliveredAt: {
         type: Date,
+    },
+    voucher: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Voucher',
     },
 }, {
     timestamps: true,
