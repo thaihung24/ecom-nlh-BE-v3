@@ -64,7 +64,7 @@ class authController {
             addressForm.detailAddress = newAddress
             newUser.addresses.push({
                 ...addressForm,
-                address: `${addressForm.address}, ${newAddress.ward.wardName}, ${newAddress.district.districtName}, ${newAddress.province.provinceName}`,
+                address: `${addressForm.address}`,
                 detailAddress: newAddress,
             })
             console.log(newUser)

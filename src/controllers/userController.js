@@ -1,6 +1,6 @@
 const ErrorResponse = require('../utils/ErrorResponse')
 const User = require('../models/user/User')
-const Address = require("../models/user/Address")
+const Address = require('../models/user/Address')
 const catchAsyncHandler = require('../middleware/async')
 
 
@@ -142,20 +142,32 @@ class userControllers {
             })
 
         })
+        // GET /api/users/address/:addressID
+    getAddress = catchAsyncHandler(async(req, res, next) => {
+            const {
+                addressID
+            } = req.params
+            const address = await Address.findById(addressID)
+            if (!address) return next(new ErrorResponse('Address not found', 404));
+
+            res.json({
+                success: true,
+                address,
+            })
+        })
         //@desc GET all user profile
         //@route GET / api/users
         //@access Private
     getUsers = catchAsyncHandler(async(req, res) => {
-        const users = await User.find({})
-        res.json({
-            success: true,
-            users,
+            const users = await User.find({})
+            res.json({
+                success: true,
+                users,
+            })
         })
-    })
-
-    //@desc Delete  user profile
-    //@route GET / api/users
-    //@access Private
+        //@desc Delete  user profile
+        //@route DELETE api/address/:addressID
+        //@access Private
     deleteUser = catchAsyncHandler(async(req, res) => {
             const user = await User.findById(req.params.id)
             if (user) {
