@@ -1,7 +1,6 @@
 const ErrorResponse = require('../utils/ErrorResponse')
 const User = require('../models/user/User')
 const Address = require('../models/user/Address')
-const Address = require('../models/user/Address')
 const catchAsyncHandler = require('../middleware/async')
 
 class userControllers {
@@ -28,12 +27,26 @@ class userControllers {
                 return next(new ErrorResponse('User not found', 401))
             }
             //
-            const { addressID, name, phone, gender, addresses, isNew } = req.body
-
+            const {
+                addressID,
+                name,
+                phone,
+                gender,
+                addresses,
+                isNew,
+            } = req.body
+            const idDefault = req.body.addresses[0].idDefault || req.body.newAddress.idDefault
             user.name = name || user.name
             user.phone = phone || user.phone
             user.gender = gender || user.gender
                 //
+            if (idDefault) {
+                user.addresses = user.addresses.map(v => {
+                    v.idDefault = false
+                    return v
+                })
+
+            }
             if (isNew) {
                 // Add address
                 const address = await Address.create({
@@ -41,11 +54,15 @@ class userControllers {
                 })
                 user.addresses.push({
                     ...addresses[0],
+                    idDefault,
                     detailAddress: address,
                 })
             } else {
                 // Update address
-                const { editAddress, newAddress } = req.body
+                const {
+                    editAddress,
+                    newAddress
+                } = req.body
                 if (editAddress) {
                     Address.findByIdAndUpdate(
                         editAddress, {
@@ -58,7 +75,9 @@ class userControllers {
 
                     user.addresses.forEach((address) => {
                         if (address.detailAddress._id == editAddress) {
+
                             address.address = newAddress.address
+                            address.idDefault = idDefault
                         }
                     })
                 }
@@ -113,7 +132,9 @@ class userControllers {
     // ##DELETE ADDRESS
     // DELETE /api/users/address/:addressID
     deleteAddress = catchAsyncHandler(async(req, res) => {
-            const { addressID } = req.params
+            const {
+                addressID
+            } = req.params
             const user = await User.findById(req.user.id)
 
             const addresses = user.addresses.filter((v) => {

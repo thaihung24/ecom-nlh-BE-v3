@@ -4,6 +4,7 @@ const catchAsyncHandler = require('../middleware/async')
 const ErrorResponse = require('../utils/ErrorResponse')
 const sendToken = require('../utils/jwtToken')
 const User = require('../models/user/User')
+const Address = require("../models/user/Address")
     //
 const sendEmail = require('../utils/sendEmail')
 const generateToken = require('../utils/generateToken.js')
@@ -55,7 +56,7 @@ class authController {
                 address: `${addressForm.address}`,
                 detailAddress: newAddress,
             })
-            console.log(newUser)
+
             const verifyToken = newUser.verifyEmailToken()
             await newUser.save()
 
