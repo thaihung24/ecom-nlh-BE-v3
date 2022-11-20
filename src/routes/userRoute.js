@@ -2,7 +2,9 @@ const express = require('express')
 const router = express.Router()
 const userController = require('../controllers/userController')
 const verifyToken = require('../middleware/auth')
-const { admin } = require('../middleware/authMiddleware.js')
+const {
+    admin
+} = require('../middleware/authMiddleware.js')
 const parser = require("../utils/cloudinaryConfig")
     //[PUT] /api/users/profile
     //[GET] /api/users/profile
@@ -11,7 +13,7 @@ router
     .get(verifyToken, userController.getUserProfile)
     .put(verifyToken, userController.updateUserProfile)
 
-router.route('/address/:addressID').delete(verifyToken, userController.deleteAddress)
+router.route('/address/:addressID').get(verifyToken, userController.getAddress).delete(verifyToken, userController.deleteAddress)
 
 // avatar update
 router.route('/avatar').put(verifyToken, parser.single("image"), userController.updateUserAvatar)

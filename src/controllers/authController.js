@@ -1,122 +1,123 @@
 const crypto = require('crypto')
-//middleware
+    //middleware
 const catchAsyncHandler = require('../middleware/async')
 const ErrorResponse = require('../utils/ErrorResponse')
 const sendToken = require('../utils/jwtToken')
 const User = require('../models/user/User')
-//
+const Address = require("../models/user/Address")
+    //
 const sendEmail = require('../utils/sendEmail')
 const generateToken = require('../utils/generateToken.js')
 class authController {
-  // [POST] /login
-  login = catchAsyncHandler(async (req, res, next) => {
-    const { email, password } = req.body
-    // check empty
-    if (!email || !password) {
-      return next(new ErrorResponse(`Missing email or password`, 400))
-    }
-    const user = await User.findOne({
-      email,
-    }).select('+password')
-    if (!user) return next(new ErrorResponse(`User not found`, 404))
-    // Checks if password is correct or not
-    const isPasswordMatched = await user.comparePassword(password)
-    if (!isPasswordMatched) {
-      return next(new ErrorResponse(`Invalid Email or Password`, 401))
-    }
+    // [POST] /login
+    login = catchAsyncHandler(async(req, res, next) => {
+            const { email, password } = req.body
+                // check empty
+            if (!email || !password) {
+                return next(new ErrorResponse(`Missing email or password`, 400))
+            }
+            const user = await User.findOne({
+                email,
+            }).select('+password')
+            if (!user) return next(new ErrorResponse(`User not found`, 404))
+                // Checks if password is correct or not
+            const isPasswordMatched = await user.comparePassword(password)
+            if (!isPasswordMatched) {
+                return next(new ErrorResponse(`Invalid Email or Password`, 401))
+            }
 
-    sendToken(user, 200, res)
-  })
-  //[POST] /register
-  register = catchAsyncHandler(async (req, res, next) => {
-    const { email, password, gender, addressForm, phone, name } = req.body
-    if (!email | !password) {
-      return next(new ErrorResponse(`Missing email or password`, 400))
-    }
-    const user = await User.findOne({
-      email: email,
-    })
+            sendToken(user, 200, res)
+        })
+        //[POST] /register
+    register = catchAsyncHandler(async(req, res, next) => {
+            const { email, password, gender, addressForm, phone, name } = req.body
+            if (!email | !password) {
+                return next(new ErrorResponse(`Missing email or password`, 400))
+            }
+            const user = await User.findOne({
+                email: email,
+            })
 
-    if (user) return next(new ErrorResponse(`Existing email`, 400))
+            if (user) return next(new ErrorResponse(`Existing email`, 400))
 
-    const newUser = new User({
-      email,
-      password,
-      addresses: [],
-      gender,
-      phone,
-      name,
-    })
+            const newUser = new User({
+                email,
+                password,
+                addresses: [],
+                gender,
+                phone,
+                name,
+            })
 
-    const newAddress = await Address.create(addressForm.detailAddress)
-    addressForm.detailAddress = newAddress
-    newUser.addresses.push({
-      ...addressForm,
-      address: `${addressForm.address}, ${newAddress.ward.wardName}, ${newAddress.district.districtName}, ${newAddress.province.provinceName}`,
-      detailAddress: newAddress,
-    })
-    console.log(newUser)
-    const verifyToken = newUser.verifyEmailToken()
-    await newUser.save()
+            const newAddress = await Address.create(addressForm.detailAddress)
+            addressForm.detailAddress = newAddress
+            newUser.addresses.push({
+                ...addressForm,
+                address: `${addressForm.address}`,
+                detailAddress: newAddress,
+            })
 
-    // send email
-    // const resetUrl = `${req.protocol}://${req.get('host')}/api/auth/verify-email/${verifyToken}`;
-    const resetUrl = `${process.env.CLIENT_URL}/api/auth/verify-email/${verifyToken}`
+            const verifyToken = newUser.verifyEmailToken()
+            await newUser.save()
 
-    const message = `Your verify token for active ${newUser.fullName} is as follow:\n\n${resetUrl}\n\nLink will be expired after 30 minutes\n\nIf you have not requested this email, then ignore it.`
+            // send email
+            // const resetUrl = `${req.protocol}://${req.get('host')}/api/auth/verify-email/${verifyToken}`;
+            const resetUrl = `${process.env.CLIENT_URL}/api/auth/verify-email/${verifyToken}`
 
-    try {
-      await sendEmail({
-        email: newUser.email,
-        subject: 'HLN website Email Verify',
-        message: message,
-      })
-      res.status(200).json({
-        success: true,
-        user: newUser,
-        message: `Email sent to: ${newUser.email}, account will be removed from system after 30 minutes without verify`,
-      })
-    } catch (e) {
-      newUser.emailCodeExpires = undefined
-      newUser.emailCodeToken = undefined
-      await newUser.save({
-        validateBeforeSave: false,
-      })
+            const message = `Your verify token for active ${newUser.fullName} is as follow:\n\n${resetUrl}\n\nLink will be expired after 30 minutes\n\nIf you have not requested this email, then ignore it.`
 
-      return next(new ErrorResponse(e.message, 500))
-    }
-  })
-  // [POST] /verify-email/:token
-  verifyEmail = catchAsyncHandler(async (req, res, next) => {
-    const { token } = req.params
+            try {
+                await sendEmail({
+                    email: newUser.email,
+                    subject: 'HLN website Email Verify',
+                    message: message,
+                })
+                res.status(200).json({
+                    success: true,
+                    user: newUser,
+                    message: `Email sent to: ${newUser.email}, account will be removed from system after 30 minutes without verify`,
+                })
+            } catch (e) {
+                newUser.emailCodeExpires = undefined
+                newUser.emailCodeToken = undefined
+                await newUser.save({
+                    validateBeforeSave: false,
+                })
 
-    // Hash URL token
-    const verifyToken = crypto.createHash('sha256').update(token).digest('hex')
+                return next(new ErrorResponse(e.message, 500))
+            }
+        })
+        // [POST] /verify-email/:token
+    verifyEmail = catchAsyncHandler(async(req, res, next) => {
+            const { token } = req.params
 
-    const user = await User.findOne({
-      emailCodeToken: verifyToken,
-      emailCodeExpires: {
-        $gt: Date.now(),
-      },
-    })
+            // Hash URL token
+            const verifyToken = crypto.createHash('sha256').update(token).digest('hex')
 
-    if (!user) {
-      return next(
-        new ErrorResponse('Verify token is invalid or has been expired', 400)
-      )
-    }
-    user.enable = true
-    await user.save({
-      validateBeforeSave: false,
-    })
-    sendToken(user, 200, res)
-  })
-  //#### OAUTH2
-  // Google
-  googleAuth = catchAsyncHandler(async (req, res, next) => {
-    return passport.authenticate('google')
-  })
-  //
+            const user = await User.findOne({
+                emailCodeToken: verifyToken,
+                emailCodeExpires: {
+                    $gt: Date.now(),
+                },
+            })
+
+            if (!user) {
+                return next(
+                    new ErrorResponse('Verify token is invalid or has been expired', 400)
+                )
+            }
+            user.enable = true
+            await user.save({
+                validateBeforeSave: false,
+            })
+            sendToken(user, 200, res)
+        })
+        //#### OAUTH2
+        // Google
+    googleAuth = catchAsyncHandler(async(req, res, next) => {
+            return passport.authenticate('google')
+        })
+        //
 }
 
 module.exports = new authController()
