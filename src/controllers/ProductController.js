@@ -221,9 +221,36 @@ class ProductController {
   // @route   GET /api/products/top
   // @access  Public
   getTopProducts = asyncHandler(async (req, res) => {
-    const products = await Product.find({}).sort({ rating: -1 }).limit(3)
-
-    res.json(products)
+    const categoryId = req.body.categoryId ? req.body.categoryId : null
+    if (categoryId) {
+      const products = await Product.find({})
+        .populate({
+          path: 'subCategory',
+          match: {
+            category: categoryId,
+          },
+        })
+        .sort({ rating: -1 })
+        .select('name rating')
+      const arr = []
+      products.map((product) => {
+        if (product.subCategory !== null) {
+          arr.push(product)
+        }
+      })
+      const result = arr.slice(0, 6)
+      res.status(200).json({
+        success: true,
+        data: result,
+        message: 'sort by category',
+      })
+    } else {
+      const products = await Product.find({})
+        .sort({ rating: -1 })
+        .limit(6)
+        .select('name rating')
+      res.json(products)
+    }
   })
 }
 module.exports = new ProductController()
