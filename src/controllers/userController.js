@@ -35,7 +35,8 @@ class userControllers {
                 addresses,
                 isNew,
             } = req.body
-            const idDefault = req.body.addresses[0].idDefault || req.body.newAddress.idDefault
+
+            const idDefault = req.body.addresses[0].idDefault
             user.name = name || user.name
             user.phone = phone || user.phone
             user.gender = gender || user.gender
@@ -47,11 +48,14 @@ class userControllers {
                 })
 
             }
+            console.log(isNew)
+
             if (isNew) {
                 // Add address
                 const address = await Address.create({
                     ...addresses[0].detailAddress,
                 })
+
                 user.addresses.push({
                     ...addresses[0],
                     idDefault,
@@ -61,26 +65,28 @@ class userControllers {
                 // Update address
                 const {
                     editAddress,
-                    newAddress
                 } = req.body
-                console.log(editAddress)
                 if (editAddress) {
                     Address.findByIdAndUpdate(
                         editAddress, {
-                            ...newAddress.detailAddress,
+                            ...addresses[0].detailAddress,
                         },
-                        (err, res) => {
+                        (err) => {
                             if (err) return next(new ErrorResponse('Cant update address', 400))
                         }
                     )
 
-                    user.addresses.forEach((address) => {
-                        if (address.detailAddress._id == editAddress) {
+                    const newA = user.addresses.map((address) => {
+                        console.log(editAddress)
+                        console.log(address.detailAddress._id.toString())
 
-                            address.address = newAddress.address
+                        if (address.detailAddress._id.toString() == editAddress) {
+                            address.address = addresses[0].address
                             address.idDefault = idDefault
                         }
+                        return address
                     })
+                    user.addresses = newA
                 }
             }
 
