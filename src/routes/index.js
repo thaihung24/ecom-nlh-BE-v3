@@ -5,12 +5,13 @@ const authRoute = require('./authRoute')
 const productRoute = require('./productRoute')
 const userRoute = require('./userRoute')
 const oauthRoute = require("./oauthRoute")
-
-const orderRoute = require('./orderRoute')
-const commentRoute = require('./commentRoute')
-const cartRoute = require("./cartRoute")
-
-
+const orderRoute = require("./orderRoute");
+const commentRoute = require("./commentRoute");
+const cartRoute = require("./cartRoute");
+const voucherRoute = require("./voucherRoute");
+// const swaggerUI = require('swagger-ui-express')
+// const swaggerJsDoc = require('swagger-jsdoc')
+//
 function route(app) {
     //Comment
     app.use('/api/comments', commentRoute)

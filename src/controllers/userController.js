@@ -63,6 +63,7 @@ class userControllers {
                     editAddress,
                     newAddress
                 } = req.body
+                console.log(editAddress)
                 if (editAddress) {
                     Address.findByIdAndUpdate(
                         editAddress, {

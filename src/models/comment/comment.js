@@ -1,10 +1,10 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 const replySchema = mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: 'User',
+      ref: "User",
     },
     avatarUrl: {
       type: String,
@@ -22,13 +22,13 @@ const replySchema = mongoose.Schema(
   {
     timestamps: true,
   }
-)
+);
 const commentSchema = mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: 'User',
+      ref: "User",
     },
     avatarUrl: {
       type: String,
@@ -37,7 +37,11 @@ const commentSchema = mongoose.Schema(
     product: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: 'Product',
+      ref: "Product",
+    },
+    avatarUrl: {
+      type: String,
+      required: true,
     },
     name: {
       type: String,
@@ -52,6 +56,6 @@ const commentSchema = mongoose.Schema(
   {
     timestamps: true,
   }
-)
-const Comment = mongoose.model('Comment', commentSchema)
-module.exports = Comment
+);
+const Comment = mongoose.model("Comment", commentSchema);
+module.exports = Comment;
