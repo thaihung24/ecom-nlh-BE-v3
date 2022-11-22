@@ -30,7 +30,7 @@ function route(app) {
     app.use('/api/products', productRoute)
 
     //product
-    app.use('/api/cart', cartRoute)
+    app.use('/api/carts', cartRoute)
 
     // test
     app.use('/test', (req, res) => {
