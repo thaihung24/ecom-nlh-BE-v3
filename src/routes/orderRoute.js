@@ -4,6 +4,9 @@ const orderControllers = require('../controllers/orderController')
 const { admin } = require('../middleware/authMiddleware')
 const verifyToken = require('../middleware/auth')
 
+router
+  .route('/topOrders')
+  .get(verifyToken, admin, orderControllers.getTopUserOrder)
 router.route('/myorders').get(verifyToken, orderControllers.getMyOrders)
 router.route('/:id/pay').put(verifyToken, orderControllers.updateOrderToPaid)
 router

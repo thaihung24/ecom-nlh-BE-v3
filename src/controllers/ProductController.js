@@ -75,14 +75,14 @@ class ProductController {
   // @access  Public
   getProductsByCategory = asyncHandler(async (req, res) => {
     const categoryId = await Category.findOne({
-      name:req.params.slug
+      name: req.params.slug,
     })
     const product = await Product.find({})
       .populate({
         path: 'subCategory',
         match: { category: categoryId._id },
       })
-      .select('name image rating price ,subCategory')
+      .select('name image rating price subCategory productOptions')
     const result = []
     product.map((item, index) => {
       if (item.subCategory !== null) {

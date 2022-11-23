@@ -180,6 +180,18 @@ class orderControllers {
       )
     }
   })
+  //@desc GET top  user order
+  //@route GET / api/users/TopOrder
+  //@access Private
+  getTopUserOrder = catchAsyncHandler(async (req, res) => {
+    const topOrder = await Order.aggregate([
+      { $group: { _id: { user: '$user' }, count: { $sum: 1 } } },
+    ])
+      .sort({ count: -1 })
+      .limit(5)
+
+    res.json(topOrder)
+  })
 }
 
 module.exports = new orderControllers()

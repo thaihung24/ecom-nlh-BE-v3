@@ -2,6 +2,7 @@ const ErrorResponse = require('../utils/ErrorResponse')
 const User = require('../models/user/User')
 const Address = require('../models/user/Address')
 const catchAsyncHandler = require('../middleware/async')
+const asyncHandler = require('express-async-handler')
 
 class userControllers {
   //@desc GET user profile
@@ -134,12 +135,9 @@ class userControllers {
   //@desc GET all user profile
   //@route GET / api/users
   //@access Private
-  getUsers = catchAsyncHandler(async (req, res) => {
+  getUsers = asyncHandler(async (req, res) => {
     const users = await User.find({})
-    res.json({
-      success: true,
-      users,
-    })
+    res.json(users)
   })
 
   //@desc Delete  user profile
