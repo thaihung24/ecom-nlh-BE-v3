@@ -8,6 +8,7 @@ const orderRoute = require('./orderRoute')
 const commentRoute = require('./commentRoute')
 const cartRoute = require('./cartRoute')
 const voucherRoute = require('./voucherRoute')
+const eventRoute = require('./eventRoute')
 // const swaggerUI = require('swagger-ui-express')
 // const swaggerJsDoc = require('swagger-jsdoc')
 //
@@ -29,6 +30,8 @@ function route(app) {
   app.use('/api/carts', cartRoute)
   //voucher
   app.use('/api/vouchers', voucherRoute)
+  //event
+  app.use('/api/events', eventRoute)
   // main
   app.use('/', (req, res, next) => {
     next(new ErrorResponse(`Page not found`, 404, null, 'Not found'))
