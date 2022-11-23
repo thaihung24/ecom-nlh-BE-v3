@@ -27,6 +27,7 @@ class cartControllers {
         const color = option.colors.find(
           (r) => r._id.toString() === item.color.toString()
         )
+        console.log(color.quantity)
         const cart = new Item({
           user: req.user.id,
           item: {
@@ -41,6 +42,7 @@ class cartControllers {
             option: item.option,
             color: item.color,
             quantity: quantity,
+            countInStock:color.quantity
           },
         })
         // const cart = new Item({

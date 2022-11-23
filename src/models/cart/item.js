@@ -47,6 +47,10 @@ const ItemSchema = mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         required: true,
       },
+      countInStock:{
+        type:Number,
+        required:true
+      }
     },
   },
   {
