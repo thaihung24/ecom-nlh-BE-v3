@@ -84,7 +84,7 @@ class orderControllers {
         //@access Private
 
     getOrderById = catchAsyncHandler(async(req, res) => {
-        const order = await Order.findById(req.params.id).populate(
+        let order = await Order.findById(req.params.id).populate(
             'user',
         )
         if (!order) return next(new ErrorResponse("Order not found", 404))
