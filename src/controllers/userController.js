@@ -77,8 +77,6 @@ class userControllers {
                     )
 
                     const newA = user.addresses.map((address) => {
-                        console.log(editAddress)
-                        console.log(address.detailAddress._id.toString())
 
                         if (address.detailAddress._id.toString() == editAddress) {
                             address.address = addresses[0].address
