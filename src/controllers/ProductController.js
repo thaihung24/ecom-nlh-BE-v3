@@ -1,3 +1,4 @@
+
 const Product = require("../models/product/productModel");
 const Manufacturer = require("../models/manufacturer/manufacturer");
 const SubCategory = require("../models/subCategory/subCategory");
@@ -5,6 +6,8 @@ const Category = require("../models/category/category");
 const Comment = require("../models/comment/comment");
 const asyncHandler = require("../middleware/async");
 
+
+const asyncHandler = require('express-async-handler')
 class ProductController {
   //[GET] /api/products
   // @desc    Fetch single product
@@ -23,7 +26,7 @@ class ProductController {
       : {};
     const count = await Product.count({ ...keyword });
     const products = await Product.find({ ...keyword })
-      .select("name price rating image")
+      .select('name price rating image productOptions')
       .limit(pageSize)
       .skip(pageSize * (page - 1));
     if (products) {
@@ -45,6 +48,7 @@ class ProductController {
         _id: product._id,
         manufacturer: manufacturer.name,
         name: product.name,
+        event: product.event,
         image: product.image,
         video: product.video,
         productOptions: product.productOptions,
@@ -71,13 +75,16 @@ class ProductController {
   // @route   GET /api/products/category/:slug
   // @access  Public
   getProductsByCategory = asyncHandler(async (req, res) => {
+    const categoryId = await Category.findOne({
+      name: req.params.slug,
+    })
     const product = await Product.find({})
       .populate({
-        path: "subCategory",
-        match: { category: req.params.slug },
+        path: 'subCategory',
+        match: { category: categoryId._id },
       })
-      .select("name image rating price ");
-    const result = [];
+      .select('name image rating price subCategory productOptions')
+    const result = []
     product.map((item, index) => {
       if (item.subCategory !== null) {
         result.push(item);
@@ -245,6 +252,15 @@ class ProductController {
         .select("name rating");
       res.json(products);
     }
-  });
+
+  })
+  // @desc    Get count product
+  // @route   GET /api/products/count
+  // @access  private
+  countProducts = asyncHandler(async (req, res) => {
+    const count = await Product.count({})
+    res.json(count)
+  })
+
 }
 module.exports = new ProductController();

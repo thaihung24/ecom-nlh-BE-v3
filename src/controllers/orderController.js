@@ -126,8 +126,21 @@ class orderControllers {
   //@route GET/api/orders/
   //@access Private Admin
   getAllOrders = asyncHandler(async (req, res) => {
+    const pageSize = 10
+    const page = Number(req.query.page) || 1
+    const count = await Order.count({})
     const orders = await Order.find({})
-    res.json(orders)
+      .populate({
+        path: 'user',
+      })
+      .limit(pageSize)
+      .skip(pageSize * (page - 1))
+    if (orders) {
+      res.json({ orders, page, pages: Math.ceil(count / pageSize) })
+    } else {
+      res.status(404)
+      throw new Error('Product not found')
+    }
   })
   //@desc PUT order by ID
   //@route PUT/api/orders/confirm/:id
@@ -159,7 +172,7 @@ class orderControllers {
   //in Body
   updateStatusOrder = asyncHandler(async (req, res, next) => {
     const order = await Order.findById(req.params.id)
-    if (order && order.isConfirm === false) {
+    if (order) {
       order.status = req.body.status
       const updateOrder = await order.save()
       if (updateOrder) {
@@ -179,6 +192,18 @@ class orderControllers {
         )
       )
     }
+  })
+  //@desc GET top  user order
+  //@route GET / api/users/TopOrder
+  //@access Private
+  getTopUserOrder = catchAsyncHandler(async (req, res) => {
+    const topOrder = await Order.aggregate([
+      { $group: { _id: { user: '$user' }, count: { $sum: 1 } } },
+    ])
+      .sort({ count: -1 })
+      .limit(5)
+
+    res.json(topOrder)
   })
 }
 
