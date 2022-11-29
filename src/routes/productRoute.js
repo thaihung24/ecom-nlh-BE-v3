@@ -4,6 +4,7 @@ const productController = require('../controllers/ProductController')
 const verifyToken = require('../middleware/auth')
 const { admin } = require('../middleware/authMiddleware.js')
 
+router.route('/count').get(verifyToken, admin, productController.countProducts)
 router.route('/topreviews').get(productController.getTopProducts)
 router.route('/category/:slug').get(productController.getProductsByCategory)
 router.route('/subcategory/:id').get(productController.getProductsBySubCategory)

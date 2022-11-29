@@ -3,8 +3,8 @@ const Manufacturer = require('../models/manufacturer/manufacturer')
 const SubCategory = require('../models/subCategory/subCategory')
 const Category = require('../models/category/category')
 const Comment = require('../models/comment/comment')
-const asyncHandler = require('../middleware/async')
 
+const asyncHandler = require('express-async-handler')
 class ProductController {
   //[GET] /api/products
   // @desc    Fetch single product
@@ -23,7 +23,7 @@ class ProductController {
       : {}
     const count = await Product.count({ ...keyword })
     const products = await Product.find({ ...keyword })
-      .select('name price rating')
+      .select('name price rating image productOptions')
       .limit(pageSize)
       .skip(pageSize * (page - 1))
     if (products) {
@@ -251,6 +251,13 @@ class ProductController {
         .select('name rating')
       res.json(products)
     }
+  })
+  // @desc    Get count product
+  // @route   GET /api/products/count
+  // @access  private
+  countProducts = asyncHandler(async (req, res) => {
+    const count = await Product.count({})
+    res.json(count)
   })
 }
 module.exports = new ProductController()

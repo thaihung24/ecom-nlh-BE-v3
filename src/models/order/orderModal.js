@@ -15,7 +15,7 @@ const orderSchema = mongoose.Schema(
       statusNow: {
         type: String,
         required: true,
-        default: 'pending',
+        default: 'Pending',
       },
       description: {
         type: String,
