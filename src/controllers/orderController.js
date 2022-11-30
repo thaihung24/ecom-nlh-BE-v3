@@ -26,17 +26,7 @@ class orderControllers {
                 items.map((item) => {
                     orderItems.push(item.item)
                 })
-                if (voucher) {
-                    const findVoucher = await Voucher.findById(voucher)
-
-                    if (findVoucher) {
-                        findVoucher.limit -= 1
-                        await findVoucher.save()
-                    } else {
-                        return next(new ErrorResponse('Voucher not found', 400))
-                    }
-                }
-                const order = new Order({
+                let order = new Order({
                     orderItems,
                     user: req.user._id,
                     shippingAddress,
@@ -45,8 +35,20 @@ class orderControllers {
                     taxPrice,
                     shippingPrice,
                     totalPrice,
-                    voucher,
                 })
+                if (voucher) {
+
+                    const findVoucher = await Voucher.findById(voucher)
+
+                    if (findVoucher) {
+                        findVoucher.limit -= 1
+                        await findVoucher.save()
+                        order.voucher = voucher
+                    } else {
+                        return next(new ErrorResponse('Voucher not found', 400))
+                    }
+                }
+
                 const createdOrder = await order.save()
                 if (createdOrder) {
                     order.orderItems.map(async(item) => {
