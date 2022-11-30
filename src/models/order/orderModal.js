@@ -1,9 +1,26 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose')
 const orderSchema = mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        ref: "users",
+        ref: 'users',
+    },
+    isConfirm: {
+        type: Boolean,
+        required: true,
+        default: false,
+    },
+    status: {
+        statusNow: {
+            type: String,
+            required: true,
+            default: 'Pending',
+        },
+        description: {
+            type: String,
+            required: true,
+            default: 'Đang đợi admin xử lý.',
+        },
     },
     orderItems: [{
         name: {
@@ -25,7 +42,7 @@ const orderSchema = mongoose.Schema({
         product: {
             type: mongoose.Schema.Types.ObjectId,
             required: true,
-            ref: "Product",
+            ref: 'Product',
         },
         color: {
             type: mongoose.Schema.Types.ObjectId,
@@ -42,6 +59,10 @@ const orderSchema = mongoose.Schema({
             required: true,
         },
         city: {
+            type: String,
+            required: true,
+        },
+        postalCode: {
             type: String,
             required: true,
         },
@@ -99,9 +120,13 @@ const orderSchema = mongoose.Schema({
     deliveredAt: {
         type: Date,
     },
+    voucher: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Voucher',
+    },
 }, {
     timestamps: true,
-});
+})
 
-const Order = mongoose.model("Order", orderSchema);
-module.exports = Order;
+const Order = mongoose.model('Order', orderSchema)
+module.exports = Order
