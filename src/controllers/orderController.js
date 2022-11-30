@@ -15,7 +15,9 @@ class orderControllers {
                 totalPrice,
                 voucher,
             } = req.body
-            const items = await Item.find({ user: req.user._id })
+            const items = await Item.find({
+                user: req.user._id
+            })
 
             if (items && items.length === 0) {
                 return next(new ErrorResponse(` no Order item `))
@@ -61,7 +63,9 @@ class orderControllers {
                         })
                         await product.save()
                     })
-                    await Item.deleteMany({ user: req.user._id })
+                    await Item.deleteMany({
+                        user: req.user._id
+                    })
                     res.status(201).json({
                         success: true,
                         order: createdOrder,
@@ -83,17 +87,6 @@ class orderControllers {
         //@route GET/api/orders/:id
         //@access Private
 
-    getOrderById = catchAsyncHandler(async(req, res) => {
-        let order = await Order.findById(req.params.id).populate(
-            'user',
-        )
-        if (!order) return next(new ErrorResponse("Order not found", 404))
-        res.status(200).json({
-            success: true,
-            message: "Get order by ID",
-            order
-        })
-    })
 
     //@desc UPDATE order tp paid
     //@route GET/api/orders/:id/pay
@@ -120,8 +113,26 @@ class orderControllers {
         //@route GET/api/orders/myorders
         //@access Private
     getMyOrders = catchAsyncHandler(async(req, res) => {
-            const orders = await Order.find({ user: req.user._id })
+            const orders = await Order.find({
+                user: req.user._id
+            })
             res.json(orders)
+        })
+        //@desc Get order by ID
+        //@route GET/api/orders/:id
+        //@access Private
+
+    getOrderById = catchAsyncHandler(async(req, res) => {
+            const order = await Order.findById(req.params.id).populate(
+                'user',
+                'name email'
+            )
+            if (!order) return next(new ErrorResponse('Order not found', 404))
+            res.status(200).json({
+                success: true,
+                message: 'Get order by ID',
+                order,
+            })
         })
         //@desc GET logged in user orders
         //@route GET/api/orders/
@@ -159,27 +170,48 @@ class orderControllers {
     */
     //in Body
     updateStatusOrder = catchAsyncHandler(async(req, res, next) => {
-        const order = await Order.findById(req.params.id)
-        if (order && order.isConfirm === false) {
-            order.status = req.body.status
-            const updateOrder = await order.save()
-            if (updateOrder) {
-                res.status(200).json({
-                    success: true,
-                    order: updateOrder,
-                    message: 'update order successfully',
-                })
+            const order = await Order.findById(req.params.id)
+            if (order && order.isConfirm === false) {
+                order.status = req.body.status
+                const updateOrder = await order.save()
+                if (updateOrder) {
+                    res.status(200).json({
+                        success: true,
+                        order: updateOrder,
+                        message: 'update order successfully',
+                    })
+                } else {
+                    return next(new ErrorResponse('update failed', 404))
+                }
             } else {
-                return next(new ErrorResponse('update failed', 404))
-            }
-        } else {
-            return next(
-                new ErrorResponse(
-                    'update order not found or order was confirm by admin',
-                    404
+                return next(
+                    new ErrorResponse(
+                        'update order not found or order was confirm by admin',
+                        404
+                    )
                 )
-            )
-        }
+            }
+        })
+        //@desc GET top  user order
+        //@route GET / api/users/TopOrder
+        //@access Private
+    getTopUserOrder = catchAsyncHandler(async(req, res) => {
+        const topOrder = await Order.aggregate([{
+                $group: {
+                    _id: {
+                        user: '$user'
+                    },
+                    count: {
+                        $sum: 1
+                    }
+                }
+            }, ])
+            .sort({
+                count: -1
+            })
+            .limit(5)
+
+        res.json(topOrder)
     })
 }
 

@@ -77,6 +77,10 @@ const productSchema = mongoose.Schema(
       required: true,
       ref: "User",
     },
+    event: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Event',
+    },
     manufacturer: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
