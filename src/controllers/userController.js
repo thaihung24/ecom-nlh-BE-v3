@@ -301,5 +301,5 @@ class userControllers {
     }
   })
 
-
+}
 module.exports = new userControllers()
