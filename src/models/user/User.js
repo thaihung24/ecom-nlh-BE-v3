@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const slugify = require('slugify')
 const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
+const mongooseDelete = require('mongoose-delete')
 const ErrorResponse = require('../../utils/ErrorResponse')
 
 // Schema
@@ -86,6 +87,10 @@ const UserSchema = new mongoose.Schema(
     timestamps: true,
   }
 )
+UserSchema.plugin(mongooseDelete, {
+  overrideMethods: 'all',
+  deleteAt: true,
+})
 UserSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password)
 }

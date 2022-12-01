@@ -4,7 +4,7 @@ const ItemSchema = mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'users',
     },
     item: {
       quantity: {
@@ -24,6 +24,24 @@ const ItemSchema = mongoose.Schema(
         optionName: {
           type: String,
           required: true,
+        },
+        listingPrice: {
+          type: Number,
+        },
+        manufacturerName: {
+          type: String,
+          require: true,
+          default: '',
+        },
+        subCategoryName: {
+          type: String,
+          require: true,
+          default: '',
+        },
+        promotionDescription: {
+          type: String,
+          require: true,
+          default: '',
         },
       },
       price: {
@@ -47,10 +65,10 @@ const ItemSchema = mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         required: true,
       },
-      countInStock:{
-        type:Number,
-        required:true
-      }
+      countInStock: {
+        type: Number,
+        required: true,
+      },
     },
   },
   {

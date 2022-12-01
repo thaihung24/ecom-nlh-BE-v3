@@ -87,11 +87,12 @@ class orderControllers {
       'user',
       'name email'
     )
-    if (order) {
-      res.json(order)
-    } else {
-      res.status(404)
-    }
+    if (!order) return next(new ErrorResponse('Order not found', 404))
+    res.status(200).json({
+      success: true,
+      message: 'Get order by ID',
+      order,
+    })
   })
 
   //@desc UPDATE order tp paid

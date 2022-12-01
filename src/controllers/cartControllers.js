@@ -18,9 +18,32 @@ class cartControllers {
         updateItem.item.quantity += Number(quantity)
         await updateItem.save()
       } else {
-        const product = await Product.findOne({
-          _id: item.product,
-        })
+        // const product = await Product.findOne({
+        //   _id: item.product,
+        // })
+        const products = await Product.aggregate([
+          {
+            $lookup: {
+              from: 'subcategories',
+              localField: 'subCategory',
+              foreignField: '_id',
+              as: 'subCategory',
+            },
+          },
+          {
+            $lookup: {
+              from: 'manufacturers',
+              localField: 'manufacturer',
+              foreignField: '_id',
+              as: 'manufacturer',
+            },
+          },
+        ])
+
+        const product = products.find(
+          (r) => r._id.toString() === item.product.toString()
+        )
+
         const option = product.productOptions.find(
           (r) => r._id.toString() === item.option.toString()
         )
@@ -36,12 +59,15 @@ class cartControllers {
             info: {
               optionName: option.productOptionName,
               colorName: color.color,
+              listingPrice: option.price,
+              manufacturerName: product.manufacturer[0].name,
+              subCategoryName: product.subCategory[0].name,
             },
             product: item.product,
             option: item.option,
             color: item.color,
             quantity: quantity,
-            countInStock:color.quantity
+            countInStock: color.quantity,
           },
         })
         // const cart = new Item({
