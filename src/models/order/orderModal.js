@@ -11,21 +11,49 @@ const orderSchema = mongoose.Schema({
         default: false,
     },
     status: {
-        statusNow: {
-            type: String,
-            required: true,
-            default: 'Pending',
-        },
-        description: {
-            type: String,
-            required: true,
-            default: 'Đang đợi admin xử lý.',
-        },
+      statusNow: {
+        type: String,
+        required: true,
+        default: 'pending',
+      },
+      description: {
+        type: String,
+        required: true,
+        default: 'Đang đợi admin xử lý.',
+      },
     },
     orderItems: [{
         name: {
             type: String,
             required: true,
+        },
+        info: {
+          colorName: {
+            type: String,
+            required: true,
+          },
+          optionName: {
+            type: String,
+            required: true,
+          },
+          listingPrice: {
+            type: Number,
+          },
+          manufacturerName: {
+            type: String,
+            require: true,
+            default: '',
+          },
+          subCategoryName: {
+            type: String,
+            require: true,
+            default: '',
+          },
+          promotionDescription: {
+            type: String,
+            require: true,
+            default: '',
+          },
         },
         quantity: {
             type: Number,

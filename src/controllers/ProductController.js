@@ -87,61 +87,89 @@ class ProductController {
                 result.push(item);
             }
         });
+    res.json(result)
+  })
+  // @desc    get product By category
+  // @route   GET /api/products/subcategory/:id
+  // @access  Public
+  getProductsBySubCategory = asyncHandler(async (req, res) => {
+    const product = await Product.find({
+      subCategory: req.params.id,
+    }).select('name image rating price')
+    if (product) {
+      res.status(201).json({
+        success: true,
+        product,
+      })
+    } else {
+      res.status(404).json({
+        success: false,
+        message: 'product not found',
+      })
+    }
+  })
+  // @desc    Delete a product
+  // @route   DELETE /api/products/:id
+  // @access  Private/Admin
+  deleteProduct = asyncHandler(async (req, res) => {
+    const product = await Product.delete({
+      _id: req.params.id,
+    })
+    if (product) {
+      res.json({ message: 'Product removed' })
+    } else {
+      res.status(404)
+      throw new Error('Product not found')
+    }
+  })
+  // @desc    restore a product
+  // @route   DELETE /api/products/:id/restore
+  // @access  Private/Admin
+  restoreProduct = asyncHandler(async (req, res) => {
+    const product = await Product.restore({
+      _id: req.params.id,
+    })
+    if (product) {
+      res.json({ message: 'restored' })
+    } else {
+      res.status(404)
+      throw new Error('Product not found')
+    }
+  })
+  // @desc    restore a product
+  // @route   DELETE /api/products/:id/force
+  // @access  Private/Admin
+  forceProduct = asyncHandler(async (req, res) => {
+    const product = await Product.deleteOne({
+      _id: req.params.id,
+    })
+    if (product) {
+      res.json({ message: 'Product removed' })
+    } else {
+      res.status(404)
+      throw new Error('Product not found')
+    }
+  })
+  // @desc    Create a product
+  // @route   POST /api/products
+  // @access  Private/Admin
+  createProduct = asyncHandler(async (req, res) => {
+    const product = new Product({
+      name: 'Sample name',
+      price: 0,
+      user: req.user._id,
+      manufacturer: Object('6357f372365d2d6acb7fb140'),
+      image: '/images/sample.jpg',
+      brand: 'Sample brand',
+      category: 'Sample category',
+      countInStock: 0,
+      numReviews: 0,
+      description: 'Sample description',
+    })
+    const createdProduct = await product.save()
+    res.status(201).json(createdProduct)
+  })
 
-        res.json(result);
-    });
-    // @desc    get product By category
-    // @route   GET /api/products/subcategory/:id
-    // @access  Public
-    getProductsBySubCategory = asyncHandler(async(req, res) => {
-        const product = await Product.find({
-            subCategory: req.params.id,
-        }).select("name image rating price");
-        if (product) {
-            res.status(201).json({
-                success: true,
-                product,
-            });
-        } else {
-            res.status(404).json({
-                success: false,
-                message: "product not found",
-            });
-        }
-    });
-    // @desc    Delete a product
-    // @route   DELETE /api/products/:id
-    // @access  Private/Admin
-    deleteProduct = asyncHandler(async(req, res) => {
-        const product = await Product.findById(req.params.id);
-        if (product) {
-            await product.remove();
-            res.json({ message: "Product removed" });
-        } else {
-            res.status(404);
-            throw new Error("Product not found");
-        }
-    });
-
-    // @desc    Create a product
-    // @route   POST /api/products
-    // @access  Private/Admin
-    createProduct = asyncHandler(async(req, res) => {
-        const product = new Product({
-            name: "Sample name",
-            price: 0,
-            user: req.user._id,
-            manufacturer: Object("6357f372365d2d6acb7fb140"),
-            image: "/images/sample.jpg",
-            brand: "Sample brand",
-            category: "Sample category",
-            countInStock: 0,
-            numReviews: 0,
-            description: "Sample description",
-        });
-        const createdProduct = await product.save();
-        res.status(201).json(createdProduct);
-    });
 
     // @desc    Update a product
     // @route   PUT /api/products/:id
@@ -251,13 +279,51 @@ class ProductController {
             }
 
         })
-        // @desc    Get count product
-        // @route   GET /api/products/count
-        // @access  private
-    countProducts = asyncHandler(async(req, res) => {
-        const count = await Product.count({})
-        res.json(count)
-    })
+        .sort({ rating: -1 })
+        .select('name rating')
+      const arr = []
+      products.map((product) => {
+        if (product.subCategory !== null) {
+          arr.push(product)
+        }
+      })
+      const result = arr.slice(0, 6)
+      res.status(200).json({
+        success: true,
+        data: result,
+        message: 'sort by category',
+      })
+    } else {
+      const products = await Product.find({})
+        .sort({ rating: -1 })
+        .limit(6)
+        .select('name rating')
+      res.json(products)
+    }
+  })
+  // @desc    Get count product
+  // @route   GET /api/products/count
+  // @access  private
+  countProducts = asyncHandler(async (req, res) => {
+    const count = await Product.count({})
+    res.json(count)
+  })
+  getTrashProducts = asyncHandler(async (req, res, next) => {
+    // const products = await Product.countDeleted
+    const pageSize = 10
+    const page = Number(req.query.page) || 1
+    const count = await Product.countDeleted()
+    const products = await Product.findDeleted()
+      .select('name price rating image ')
+      .limit(pageSize)
+      .skip(pageSize * (page - 1))
+    if (products) {
+      res.json({ products, page, pages: Math.ceil(count / pageSize) })
+    } else {
+      res.status(404)
+      throw new Error('Product not found')
+    }
+  })
 
 }
 module.exports = new ProductController();
