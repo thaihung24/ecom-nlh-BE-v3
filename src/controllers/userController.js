@@ -2,7 +2,7 @@ const ErrorResponse = require('../utils/ErrorResponse')
 const User = require('../models/user/User')
 const Address = require('../models/user/Address')
 const catchAsyncHandler = require('../middleware/async')
-
+const asyncHandler = require('express-async-handler')
 class userControllers {
   //@desc GET user profile
   //@route POST / api/users/profile
@@ -180,7 +180,7 @@ class userControllers {
   //@desc GET all user profile
   //@route GET / api/users
   //@access Private
-  getUsers = asyncHandler(async (req, res) => {
+  getUsers = catchAsyncHandler(async (req, res) => {
     const pageSize = 10
     const page = Number(req.query.page) || 1
     const count = await User.count({})
