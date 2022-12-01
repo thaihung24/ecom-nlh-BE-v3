@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose')
 const mongooseDelete = require('mongoose-delete')
 const reviewSchema = mongoose.Schema(
@@ -26,7 +27,7 @@ const reviewSchema = mongoose.Schema(
   {
     timestamps: true,
   }
-)
+);
 const colorSchema = mongoose.Schema({
   color: {
     type: String,
@@ -37,14 +38,14 @@ const colorSchema = mongoose.Schema({
     default: 0,
   },
   images: [],
-})
+});
 const imageSchema = mongoose.Schema({
   urlImage: {
     type: String,
     required: true,
-    default: '',
+    default: "",
   },
-})
+});
 const optionSchema = mongoose.Schema({
   productOptionName: {
     type: String,
@@ -61,7 +62,7 @@ const optionSchema = mongoose.Schema({
     default: 0,
   },
   colors: [colorSchema],
-})
+});
 const detailSchema = mongoose.Schema({
   name: {
     type: String,
@@ -69,13 +70,13 @@ const detailSchema = mongoose.Schema({
   value: {
     type: String,
   },
-})
+});
 const productSchema = mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: 'users',
+      ref: "User",
     },
     event: {
       type: mongoose.Schema.Types.ObjectId,
@@ -84,7 +85,7 @@ const productSchema = mongoose.Schema(
     manufacturer: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: 'Manufacturer',
+      ref: "Manufacturer",
     },
     name: {
       type: String,
@@ -106,7 +107,7 @@ const productSchema = mongoose.Schema(
     subCategory: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: 'Subcategory',
+      ref: "Subcategory",
     },
     reviews: [reviewSchema],
     rating: {
@@ -134,11 +135,13 @@ const productSchema = mongoose.Schema(
   {
     timestamps: true,
   }
+
 )
 productSchema.plugin(mongooseDelete, {
   overrideMethods: 'all',
   deleteAt: true,
 })
 
-const Product = mongoose.model('Product', productSchema)
-module.exports = Product
+
+const Product = mongoose.model("Product", productSchema);
+module.exports = Product;
