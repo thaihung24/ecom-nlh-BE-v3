@@ -136,6 +136,41 @@ class orderControllers {
                 order,
             })
         })
+        //@desc Get order by ID
+        //@route GET/api/orders/:id
+        //@access Private
+
+    updateOrderById = catchAsyncHandler(async(req, res, next) => {
+            const {
+                shippingAddress,
+                voucher
+            } = req.body
+            const order = await Order.findById(req.params.id).populate(
+                'user',
+            )
+            if (!order) return next(new ErrorResponse('Order not found', 404))
+            order.shippingAddress = shippingAddress
+            if (voucher) {
+                const findVoucher = await Voucher.findById(voucher)
+                if (findVoucher) {
+                    findVoucher.limit -= 1
+                    await findVoucher.save({
+                        validateBeforeSave: false,
+                    })
+                    order.voucher = voucher
+                } else {
+                    return next(new ErrorResponse('Voucher Invalid', 400))
+                }
+            }
+            await order.save({
+                validateBeforeSave: false
+            })
+            res.status(200).json({
+                success: true,
+                message: 'Update order successfully',
+                order,
+            })
+        })
         //@desc GET logged in user orders
         //@route GET/api/orders/
         //@access Private Admin
@@ -172,27 +207,24 @@ class orderControllers {
     */
     //in Body
     updateStatusOrder = catchAsyncHandler(async(req, res, next) => {
-            const order = await Order.findById(req.params.id)
-            if (order && order.isConfirm === false) {
-                order.status = req.body.status
-                const updateOrder = await order.save()
-                if (updateOrder) {
-                    res.status(200).json({
-                        success: true,
-                        order: updateOrder,
-                        message: 'update order successfully',
-                    })
-                } else {
-                    return next(new ErrorResponse('update failed', 404))
+            const order = await Order.findOne({
+                _id: req.params.id,
+                "isConfirm": {
+                    $ne: true
                 }
-            } else {
-                return next(
-                    new ErrorResponse(
-                        'update order not found or order was confirm by admin',
-                        404
-                    )
-                )
-            }
+            })
+            console.log(order)
+            if (!order) return next(new ErrorResponse("Valid order not found", 404))
+            order.status = req.body.status
+
+            const updateOrder = await order.save({
+                validateBeforeSave: false,
+            })
+            res.status(200).json({
+                success: true,
+                order: updateOrder,
+                message: 'Update order successfully',
+            })
         })
         //@desc GET top  user order
         //@route GET / api/users/TopOrder
