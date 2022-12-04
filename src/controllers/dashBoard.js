@@ -18,6 +18,10 @@ class dashBoardControllers {
     const countOrdersPending = await Order.count({
       isConfirm: false,
     })
+    const Sum = Intl.NumberFormat('it-IT', {
+      style: 'currency',
+      currency: 'VND',
+    }).format(sumTotalOrder[0].sumTotalPrice)
     const result = [
       {
         icon: 'bx bx-shopping-bag',
@@ -31,7 +35,7 @@ class dashBoardControllers {
       },
       {
         icon: 'bx bx-dollar-circle',
-        count: sumTotalOrder[0].sumTotalPrice,
+        count: Sum,
         title: 'Total turnover',
       },
       {
