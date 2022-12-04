@@ -11,6 +11,7 @@ const passport = require("passport");
 
 // @@USER
 
+
 // getInfo (Haven't done)
 router.route("/me").get(verifyToken, userController.getUserProfile);
 //[POST] /api/auth/login
@@ -21,8 +22,13 @@ router.route("/register").post(authController.register);
 
 //[POST] /api/auth/verify-email/:token
 router.route("/verify-email/:token").post(authController.verifyEmail);
+//[GET] /api/auth/logout
+router.route("/logout").get(authController.logOut);
+// [POST] /api/auth/password/forgot
+router.route('/password/forgot').post(authController.forgotPassword)
 
-
+// [PUT] /api/auth/password/resetpassword/:token
+router.route('/password/resetpassword/:token').put(authController.resetPassword)
 
 
 // @@ADMIN 
