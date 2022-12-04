@@ -64,6 +64,88 @@ class orderControllers {
           })
           await product.save()
         })
+        //@desc GET logged in user orders
+        //@route GET/api/orders/myorders
+        //@access Private
+    getMyOrders = catchAsyncHandler(async(req, res) => {
+            const orders = await Order.find({
+                user: req.user._id
+            })
+            res.json(orders)
+        })
+        //@desc Get order by ID
+        //@route GET/api/orders/:id
+        //@access Private
+
+    getOrderById = catchAsyncHandler(async(req, res) => {
+            const order = await Order.findById(req.params.id).populate(
+                'user',
+                'name email'
+            )
+            if (!order) return next(new ErrorResponse('Order not found', 404))
+            res.status(200).json({
+                success: true,
+                message: 'Get order by ID',
+                order,
+            })
+        })
+        //@desc Get order by ID
+        //@route GET/api/orders/:id
+        //@access Private
+
+    updateOrderById = catchAsyncHandler(async(req, res, next) => {
+            const {
+                shippingAddress,
+                voucher
+            } = req.body
+            const order = await Order.findById(req.params.id).populate(
+                'user',
+            )
+            if (!order) return next(new ErrorResponse('Order not found', 404))
+            order.shippingAddress = shippingAddress
+            if (voucher) {
+                const findVoucher = await Voucher.findById(voucher)
+                if (findVoucher) {
+                    findVoucher.limit -= 1
+                    await findVoucher.save({
+                        validateBeforeSave: false,
+                    })
+                    order.voucher = voucher
+                } else {
+                    return next(new ErrorResponse('Voucher Invalid', 400))
+                }
+            }
+            await order.save({
+                validateBeforeSave: false
+            })
+            res.status(200).json({
+                success: true,
+                message: 'Update order successfully',
+                order,
+            })
+        })
+        //@desc GET logged in user orders
+        //@route GET/api/orders/
+        //@access Private Admin
+    getAllOrders = catchAsyncHandler(async(req, res) => {
+            const orders = await Order.find({})
+            res.json(orders)
+        })
+        //@desc PUT order by ID
+        //@route PUT/api/orders/confirm/:id
+        //@access Private Admin
+    confirmOrder = catchAsyncHandler(async(req, res, next) => {
+        const order = await Order.findById(req.params.id)
+        if (order) {
+            order.isConfirm = true
+            await order.save()
+            res.json({
+                success: true,
+                message: 'Order confirmed successfully',
+            })
+        } else {
+            return next(new ErrorResponse('Confirm failed', 404))
+
         await Item.deleteMany({ user: req.user._id })
         res.status(201).json(createdOrder)
       } else {
@@ -73,6 +155,7 @@ class orderControllers {
           if (findVoucher) {
             findVoucher.limit += 1
           }
+
         }
         return next(new ErrorResponse('Add order fail', 400))
       }
@@ -115,6 +198,7 @@ class orderControllers {
       res.status(404)
       throw new Error('Order not found')
     }
+
   })
   //@desc GET logged in user orders
   //@route GET/api/orders/myorders

@@ -2,6 +2,8 @@ const ErrorResponse = require('../utils/ErrorResponse')
 const catchAsyncHandler = require('../middleware/async')
 const jwt = require('jsonwebtoken')
 const User = require('../models/user/User')
+const passport = require('../utils/passportConfig')
+
 const verifyToken = catchAsyncHandler(async(req, res, next) => {
     // const authHeader = req.header("Authorization")
     const authHeader = req.header('Authorization')
@@ -29,5 +31,8 @@ const verifyToken = catchAsyncHandler(async(req, res, next) => {
         )
     }
 })
+const passportGoogle = catchAsyncHandler(async(req, res, next) => passport.authenticate(`google`, {
+    scope: ['profile']
+}))
 
 module.exports = verifyToken
