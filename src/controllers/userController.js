@@ -2,7 +2,7 @@ const ErrorResponse = require('../utils/ErrorResponse')
 const User = require('../models/user/User')
 const Address = require('../models/user/Address')
 const catchAsyncHandler = require('../middleware/async')
-
+const asyncHandler = require('express-async-handler')
 class userControllers {
     //@desc GET user profile
     //@route POST / api/users/profile
