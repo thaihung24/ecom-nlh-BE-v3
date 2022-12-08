@@ -30,6 +30,8 @@ router.route('/password/forgot').post(authController.forgotPassword)
 // [PUT] /api/auth/password/resetpassword/:token
 router.route('/password/resetpassword/:token').put(authController.resetPassword)
 
+// [PUT] /api/auth/password/change
+router.route('/password/change').put(authController.changePassword)
 
 // @@ADMIN 
 
