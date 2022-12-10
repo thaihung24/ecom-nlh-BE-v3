@@ -1,8 +1,10 @@
+const Event = require("../models/event/event")
+
 const multer = require('multer');
-
 const cloudinary = require('cloudinary').v2
-
-const { CloudinaryStorage } = require("multer-storage-cloudinary")
+const {
+    CloudinaryStorage
+} = require("multer-storage-cloudinary")
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_HOST,
@@ -11,7 +13,7 @@ cloudinary.config({
 })
 
 // init
-const storage = new CloudinaryStorage({
+const userStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
         folder: "userAvatar",
@@ -19,8 +21,24 @@ const storage = new CloudinaryStorage({
         public_id: (req, file) => req.user._id,
     }
 })
+const eventStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: "eventBanner",
+        format: async() => "png",
+        public_id: (req, file) => `banner${Date.now().toString()}`
+    }
 
-const parser = multer({ storage: storage })
 
+})
 
-module.exports = parser
+const userParser = multer({
+    storage: userStorage,
+})
+const eventParser = multer({
+    storage: eventStorage
+})
+module.exports = {
+    userParser,
+    eventParser
+}

@@ -1,6 +1,8 @@
 const express = require('express')
 const router = express.Router()
-
+const {
+    eventParser
+} = require("../utils/cloudinaryConfig")
 const verifyToken = require('../middleware/auth')
 const {
     admin
@@ -9,8 +11,8 @@ const eventController = require('../controllers/eventControllers')
 
 // @@USER
 //[GET,POST] /api/events
-router.route('/').get(eventController.getListEvent).post(eventController.postEvent)
+router.route('/').get(eventController.getListEvent).post(verifyToken, admin, eventParser.single("image"), eventController.postEvent)
     // [PUT,DELETE] /api/events/:id
-router.route('/:id').put(verifyToken, admin, eventController.updateEvent).delete(verifyToken, admin, eventController.deleteEvent)
+router.route('/:id').put(verifyToken, admin, eventParser.single("image"), eventController.updateEvent).delete(verifyToken, admin, eventController.deleteEvent)
 
 module.exports = router

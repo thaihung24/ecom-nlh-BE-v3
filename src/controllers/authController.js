@@ -187,7 +187,7 @@ class authController {
             const user = await User.findOne({
                 emailCodeToken: token,
                 emailCodeExpires: {
-                    $gt: ISODate(Date.now()),
+                    $gt: Date.now(),
 
                 }
             })

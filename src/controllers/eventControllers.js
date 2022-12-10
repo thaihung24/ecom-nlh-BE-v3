@@ -18,15 +18,21 @@ class eventController {
         // [POST] /api/events
     postEvent = catchAsyncHandler(async(req, res, next) => {
             const {
-                banner,
-                products
-            } = req.body
+                products,
+                name
+            } = JSON.parse(req.body.data)
+            const public_id = req.file.filename.split("/")[1]
             const event = await Event.create({
+                name,
                 user: req.user._id,
-                urlBanner: banner,
+                banner: {
+                    url: req.file.path,
+                    public_id: public_id
+                },
                 products,
             })
-            if (!event) return next(ErrorResponse("Create event failure", 400))
+            if (!event) return next(new ErrorResponse("Create event failure", 400))
+            console.log(event)
             res.status(200).json({
                 success: true,
                 message: "Event created successfully",
@@ -36,13 +42,14 @@ class eventController {
         // [PUT] /api/events/:id
     updateEvent = catchAsyncHandler(async(req, res, next) => {
             const {
-                banner,
+                name,
                 products
-            } = req.body
-            const event = await Event.findById(req.query.id)
+            } = JSON.parse(req.body.data)
+            const event = await Event.findById(req.params.id)
             if (!event) return next(new ErrorResponse("Event not found", 404))
-            event.urlBanner = banner
-            event.products = products
+            event.banner.url = req.file.path || event.banner.url
+            event.products = products || event.products
+            event.name = name || event.name
             await event.save({
                 validateBeforeSave: false
             })
@@ -54,7 +61,7 @@ class eventController {
         })
         // [DELETE] /api/events/:id
     deleteEvent = catchAsyncHandler(async(req, res, next) => {
-        const event = await Event.findByIdAndDelete(req.query.id)
+        const event = await Event.findByIdAndDelete(req.params.id)
         if (!event) return next(new ErrorResponse("Event not found", 404))
         res.status(200).json({
             success: false,
