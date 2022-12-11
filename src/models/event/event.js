@@ -7,6 +7,8 @@ const eventSchema = mongoose.Schema({
             required: true,
         },
         name: String,
+        award: String,
+        color: String,
         banner: {
             url: String,
             public_id: String,
@@ -14,7 +16,11 @@ const eventSchema = mongoose.Schema({
         products: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Product'
-        }]
+        }],
+        expireIn: {
+            type: Date,
+            required: true,
+        }
     }, {
         timestamps: true
     })
