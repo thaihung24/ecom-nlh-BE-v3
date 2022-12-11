@@ -73,6 +73,16 @@ route(app);
 const errorHandler = require("./src/middleware/error");
 app.use(errorHandler);
 
+
+// db
+const db = require("./src/config/db");
+
+db.connect();
+
+//context
+const PORT = process.env.PORT;
+//
+const server = app.listen(PORT || 5000, () => console.log("Server start on port " + PORT));
 // Handle Unhandled Promise rejections
 process.on("unhandledRejection", (err) => {
     console.log(`ERROR: ${err.stack}`);
@@ -87,12 +97,3 @@ process.on("uncaughtException", (err) => {
     console.log("Shutting down due to uncaught exception");
     process.exit(1);
 });
-// db
-const db = require("./src/config/db");
-
-db.connect();
-
-//context
-const PORT = process.env.PORT;
-//
-app.listen(PORT || 5000, () => console.log("Server start on port " + PORT));

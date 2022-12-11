@@ -181,24 +181,44 @@ class authController {
         //[PUT]  /password/resetpassword/:token
     resetPassword = catchAsyncHandler(async(req, res, next) => {
 
-        if (!req.body.password) return next(new ErrorResponse("Missing password"))
-        const token = crypto.createHash('sha256').update(req.params.token).digest('hex');
-        console.log(token)
-        const user = await User.findOne({
-            emailCodeToken: token,
-            emailCodeExpires: {
-                $gt: ISODate(Date.now()),
+            if (!req.body.password) return next(new ErrorResponse("Missing password"))
+            const token = crypto.createHash('sha256').update(req.params.token).digest('hex');
+            console.log(token)
+            const user = await User.findOne({
+                emailCodeToken: token,
+                emailCodeExpires: {
+                    $gt: Date.now(),
 
-            }
+                }
+            })
+            if (!user) return next(new ErrorResponse("Invalid token or expired token, try again", 404))
+
+            user.password = req.body.password
+
+            await user.save({
+                validateBeforeSave: false
+            })
+
         })
-        if (!user) return next(new ErrorResponse("Invalid token or expired token, try again", 404))
-
-        user.password = req.body.password
-
+        //[PUT] /password/change
+    changePassword = catchAsyncHandler(async(req, res, next) => {
+        const user = await User.findById(req.user._id).select("+password")
+        if (!user) return next(new ErrorResponse("User not found", 404))
+        const {
+            enteredPassword,
+            newPassword
+        } = req.body
+        if (!enteredPassword || !newPassword) return next(new ErrorResponse("Missing password", 400))
+        const checkPassword = await user.comparePassword(enteredPassword)
+        if (!checkPassword) return next(new ErrorResponse("Password incorrect", 400))
+        user.password = newPassword
         await user.save({
             validateBeforeSave: false
         })
-
+        res.status(200).json({
+            success: true,
+            message: "Update user password successfully"
+        })
     })
 
 }
