@@ -3,6 +3,8 @@ const mongoose = require('mongoose')
 const slugify = require('slugify')
 const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
+const mongooseDelete = require('mongoose-delete')
+const ErrorResponse = require('../../utils/ErrorResponse')
 
 // Schema
 const UserSchema = new mongoose.Schema({
@@ -16,6 +18,10 @@ const UserSchema = new mongoose.Schema({
         require: [true, 'Please add a email'],
         unique: true,
     },
+    facebookID: {
+        type: String,
+        default: null
+    },
     password: {
         type: String,
         require: [true, 'Please add password'],
@@ -24,10 +30,6 @@ const UserSchema = new mongoose.Schema({
         select: false,
     },
     addresses: [{
-        addressID: {
-            type: Number,
-            default: 0,
-        },
         idDefault: {
             type: Boolean,
             default: false,
@@ -37,7 +39,7 @@ const UserSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'address',
         },
-    }],
+    }, ],
     phone: String,
     name: String,
     fullName: String,
@@ -52,13 +54,15 @@ const UserSchema = new mongoose.Schema({
         public_id: {
             type: String,
             required: true,
+            default: 'avatars/muqwmegdp6xzikzgsdkw',
         },
         url: {
             type: String,
             required: true,
+            default: 'https://res.cloudinary.com/dw8fi9npd/image/upload/v1667137085/avatars/muqwmegdp6xzikzgsdkw.jpg',
         },
     },
-    // role
+    //  
     isAdmin: {
         type: Boolean,
         required: true,
@@ -80,14 +84,20 @@ const UserSchema = new mongoose.Schema({
     },
 }, {
     timestamps: true,
+
+  }
+)
+UserSchema.plugin(mongooseDelete, {
+  overrideMethods: 'all',
+  deleteAt: true,
 })
-UserSchema.methods.matchPassword = async function(enteredPassword) {
-    return await bcrypt.compare(enteredPassword, this.password)
+UserSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password)
+
 }
 
 // Slugify
 UserSchema.pre('save', function(next) {
-    // 
     let fullNameRaw = this.firstName ?
         `${this.firstName} ${this.lastName}` :
         this.name
@@ -96,6 +106,7 @@ UserSchema.pre('save', function(next) {
         trim: true,
         lower: true,
     })
+
     next()
 })
 
@@ -134,6 +145,8 @@ UserSchema.methods.verifyEmailToken = function() {
         .digest('hex')
         //expires
     this.emailCodeExpires = Date.now() + 60 * 1000 * 30
+    console.log(Date.now() + 60 * 1000 * 30)
+    console.log(Date.now())
 
     return verifyToken
 }
