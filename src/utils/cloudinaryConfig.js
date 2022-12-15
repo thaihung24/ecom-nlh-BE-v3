@@ -14,31 +14,31 @@ cloudinary.config({
 
 // init
 const userStorage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-        folder: "userAvatar",
-        format: async() => "png",
-        public_id: (req, file) => req.user._id,
-    }
-})
-const eventStorage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-        folder: "eventBanner",
-        format: async() => "png",
-        public_id: (req, file) => `banner${Date.now().toString()}`
-    }
+        cloudinary: cloudinary,
+        params: {
+            folder: "userAvatar",
+            format: async() => "png",
+            public_id: (req, file) => req.user._id,
+        }
+    })
+    // const eventStorage = new CloudinaryStorage({
+    //     cloudinary: cloudinary,
+    //     params: {
+    //         folder: "eventBanner",
+    //         format: async() => "png",
+    //         public_id: (req, file) => `banner${Date.now().toString()}`
+    //     }
 
 
-})
+// })
 
 const userParser = multer({
-    storage: userStorage,
-})
-const eventParser = multer({
-    storage: eventStorage
-})
+        storage: userStorage,
+    })
+    // const eventParser = multer({
+    //     storage: eventStorage
+    // })
 module.exports = {
     userParser,
-    eventParser
+    // eventParser
 }
