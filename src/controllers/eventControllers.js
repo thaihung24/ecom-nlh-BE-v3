@@ -2,7 +2,7 @@ const Event = require('../models/event/event')
 const Product = require('../models/product/productModel')
 const catchAsyncHandler = require('../middleware/async')
 const ErrorResponse = require('../utils/ErrorResponse')
-
+const cloudinary = require('cloudinary').v2
 class eventController {
     // [GET] /api/events
     getListEvent = catchAsyncHandler(async(req, res, next) => {
@@ -34,13 +34,16 @@ class eventController {
             } = JSON.parse(req.body.data)
             let days = availableDays * 24 * 60 * 60 * 1000
 
-            const public_id = req.file.filename.split("/")[1]
+            const image = await cloudinary.uploader.upload(req.file.path, {
+                folder: "/eventBanner",
+                public_id: `banner${Date.now()}`
+            })
             const event = await Event.create({
                 name,
                 user: req.user._id,
                 banner: {
-                    url: req.file.path,
-                    public_id: public_id
+                    url: image.secure_url,
+                    public_id: image.public_id,
                 },
                 color,
                 award,
@@ -69,9 +72,15 @@ class eventController {
                     $gt: Date.now()
                 },
             })
+            if (!event) return next(new ErrorResponse(`Event not found`, 404))
+            if (req.file) {
+                const image = cloudinary.uploader.upload(req.file.path, {
+                    public_id: event.banner.public_id,
+                })
+                event.banner.url = image.secure_url || event.banner.url
+            }
             const addDays = addAvailableDays * 24 * 60 * 60 * 1000
             if (!event) return next(new ErrorResponse("Event not found or Expired", 404))
-            event.banner.url = req.file.path || event.banner.url
             event.products = products || event.products
             event.name = name || event.name
             event.color = color || event.color
