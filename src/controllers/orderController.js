@@ -53,6 +53,7 @@ class orderControllers {
                 const createdOrder = await order.save()
 
                 if (createdOrder) {
+                    items.forEach(async(v) => await v.remove())
                     order.orderItems.map(async(item) => {
                         const product = await Product.findById(item.product)
                         product.productOptions.forEach((Option, index) => {
@@ -88,20 +89,10 @@ class orderControllers {
         //@route GET/api/orders/:id
         //@access Private
 
-    getOrderById = catchAsyncHandler(async(req, res) => {
-            const order = await Order.findById(req.params.id).populate(
-                'user',
-            )
-            if (!order) return next(new ErrorResponse('Order not found', 404))
-            res.status(200).json({
-                success: true,
-                message: 'Get order by ID',
-                order,
-            })
-        })
-        //@desc Get order by ID
-        //@route GET/api/orders/:id
-        //@access Private
+
+    //@desc Get order by ID
+    //@route GET/api/orders/:id
+    //@access Private
 
     updateOrderById = catchAsyncHandler(async(req, res, next) => {
             const {
@@ -148,7 +139,6 @@ class orderControllers {
     getOrderById = asyncHandler(async(req, res) => {
         const order = await Order.findById(req.params.id).populate(
             'user',
-            'name email'
         )
         if (!order) return next(new ErrorResponse('Order not found', 404))
         res.status(200).json({
