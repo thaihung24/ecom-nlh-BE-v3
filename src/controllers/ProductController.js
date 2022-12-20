@@ -305,7 +305,7 @@ class ProductController {
                         rating: -1
                     })
                     .limit(6)
-                    .select('name rating')
+                    .select('name ratting price image')
                 res.json(products)
             }
         })
