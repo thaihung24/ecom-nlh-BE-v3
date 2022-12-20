@@ -286,7 +286,6 @@ class ProductController {
                     .sort({
                         rating: -1
                     })
-                    .select('name rating')
                 const arr = []
                 products.map((product) => {
                     if (product.subCategory !== null) {

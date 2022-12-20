@@ -154,9 +154,9 @@ class authController {
 
             // Mail sending 
             // Create reset password url
-            const resetUrl = `${process.env.CLIENT_URL}/password_reset/${resetPasswordToken}`;
+            const resetUrl = `${resetPasswordToken}`;
 
-            const message = `Your verify token for reset ${user.name}'s password is as follow:\n\n${resetUrl}\n\nLink will be expired after 30 minutes\n\nIf you have not requested this email, then ignore it.`
+            const message = `Your verify token for reset ${user.name}'s password is :\n\n${resetUrl}\n\nCode will be expired after 30 minutes\n\nIf you have not requested this email, then ignore it.`
             try {
 
                 await sendEmail({
@@ -183,7 +183,6 @@ class authController {
         })
         //[PUT]  /password/resetpassword/:token
     resetPassword = catchAsyncHandler(async(req, res, next) => {
-
             if (!req.body.password) return next(new ErrorResponse("Missing password"))
             const token = crypto.createHash('sha256').update(req.params.token).digest('hex');
             const user = await User.findOne({
@@ -193,7 +192,6 @@ class authController {
                 }
             })
             if (!user) return next(new ErrorResponse("Invalid token or expired token, try again", 404))
-
             user.password = req.body.password
             user.emailCodeExpires = undefined
             user.emailCodeToken = undefined
@@ -203,7 +201,6 @@ class authController {
             res.status(200).json({
                 success: true,
                 message: "Password reset successfully",
-
             })
         })
         //[PUT] /password/change
