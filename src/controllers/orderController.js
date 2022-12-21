@@ -136,11 +136,41 @@ class orderControllers {
         //@route GET/api/orders/:id
         //@access Private
 
+<<<<<<< HEAD
     getOrderById = asyncHandler(async(req, res) => {
         const order = await Order.findById(req.params.id).populate(
             'user',
         )
         if (!order) return next(new ErrorResponse('Order not found', 404))
+=======
+
+  //@desc Update status
+  //@route PUT/api/orders/:id
+  //@access Private
+  //In body
+  /*
+  status:{
+    statusNow:"cancel",
+    description:"Ly do huy"
+  }
+  */
+  //in Body
+  updateStatusOrder = asyncHandler(async (req, res, next) => {
+    const order = await Order.findById(req.params.id)
+    if (order) {
+      order.status = req.body.status
+      if (req.body.status.statusNow === 'Shipped') {
+        if (!order.isPaid) {
+          order.isPaid = true
+          order.paidAt = Date.now()
+        }
+        order.isDelivered = true
+        order.deliveredAt = Date.now()
+      }
+      const updateOrder = await order.save()
+      if (updateOrder) {
+
+>>>>>>> e234dba4c9c2d06ad6c3a4a9fb09b06929a0647c
         res.status(200).json({
             success: true,
             message: 'Get order by ID',
