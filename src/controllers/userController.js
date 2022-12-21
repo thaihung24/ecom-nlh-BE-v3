@@ -2,7 +2,7 @@ const ErrorResponse = require('../utils/ErrorResponse')
 const User = require('../models/user/User')
 const Address = require('../models/user/Address')
 const catchAsyncHandler = require('../middleware/async')
-const asyncHandler = require('express-async-handler')
+
 class userControllers {
     //@desc GET user profile
     //@route POST / api/users/profile
@@ -22,83 +22,84 @@ class userControllers {
         //@route PUT api/users/profile
         //@access Private
     updateUserProfile = catchAsyncHandler(async(req, res, next) => {
-            const user = await User.findById(req.user._id)
-            if (!user) {
-                return next(new ErrorResponse('User not found', 401))
-            }
+        const user = await User.findById(req.user._id)
+        if (!user) {
+            return next(new ErrorResponse('User not found', 401))
+        }
+        //
+        const {
+            addressID,
+            name,
+            phone,
+            gender,
+            addresses,
+            isNew
+        } = req.body
+
+        const idDefault = req.body.addresses[0].idDefault
+        user.name = name || user.name
+        user.phone = phone || user.phone
+        user.gender = gender || user.gender
             //
+        if (idDefault) {
+            user.addresses = user.addresses.map((v) => {
+                v.idDefault = false
+                return v
+            })
+        }
+        console.log(isNew)
+
+        if (isNew) {
+            // Add address
+            const address = await Address.create({
+                ...addresses[0].detailAddress,
+            })
+
+            user.addresses.push({
+                ...addresses[0],
+                idDefault,
+                detailAddress: address,
+            })
+        } else {
+            // Update address
             const {
-                addressID,
-                name,
-                phone,
-                gender,
-                addresses,
-                isNew
+                editAddress
             } = req.body
+            if (editAddress) {
+                Address.findByIdAndUpdate(
+                    editAddress, {
+                        ...addresses[0].detailAddress,
+                    },
+                    (err) => {
+                        if (err) return next(new ErrorResponse('Cant update address', 400))
+                    }
+                )
 
-            const idDefault = req.body.addresses[0].idDefault
-            user.name = name || user.name
-            user.phone = phone || user.phone
-            user.gender = gender || user.gender
-                //
-            if (idDefault) {
-                user.addresses = user.addresses.map((v) => {
-                    v.idDefault = false
-                    return v
+                const newA = user.addresses.map((address) => {
+                    if (address.detailAddress._id.toString() == editAddress) {
+                        address.address = addresses[0].address
+                        address.idDefault = idDefault
+                    }
+                    return address
                 })
+                user.addresses = newA
             }
-            console.log(isNew)
+        }
 
-            if (isNew) {
-                // Add address
-                const address = await Address.create({
-                    ...addresses[0].detailAddress,
-                })
-
-                user.addresses.push({
-                    ...addresses[0],
-                    idDefault,
-                    detailAddress: address,
-                })
-            } else {
-                // Update address
-                const {
-                    editAddress
-                } = req.body
-                if (editAddress) {
-                    Address.findByIdAndUpdate(
-                        editAddress, {
-                            ...addresses[0].detailAddress,
-                        },
-                        (err) => {
-                            if (err) return next(new ErrorResponse('Cant update address', 400))
-                        }
-                    )
-
-                    const newA = user.addresses.map((address) => {
-                        if (address.detailAddress._id.toString() == editAddress) {
-                            address.address = addresses[0].address
-                            address.idDefault = idDefault
-                        }
-                        return address
-                    })
-                    user.addresses = newA
-                }
-            }
-
-            const updateUser = await user.save({
-                validateBeforeSave: false,
-            })
-
-            res.status(200).json({
-                success: true,
-                message: 'User updated',
-                user: updateUser,
-            })
+        const updateUser = await user.save({
+            validateBeforeSave: false,
         })
-        // @desc UPDATE User avatar picture
-        //@route PUT api/users/avatar
-        //@access Private
+
+        res.status(200).json({
+            success: true,
+            message: 'User updated',
+            user: updateUser,
+        })
+    })
+
+    // @desc UPDATE User avatar picture
+    //@route PUT api/users/avatar
+    //@access Private
     updateUserAvatar = catchAsyncHandler(async(req, res, next) => {
         const user = await User.findById(req.user._id)
         if (!user) {
@@ -186,7 +187,7 @@ class userControllers {
                 })
             } else {
                 res.status(401)
-                throw new Error('User not found')
+                return next(new ErrorResponse('User not found', 404))
             }
         })
         //@desc GET all user profile
@@ -207,53 +208,9 @@ class userControllers {
             })
         } else {
             res.status(404)
-            throw new Error('Product not found')
+            return next(new ErrorResponse('Product not found', 404))
         }
     })
-
-    //@desc UPDATE user profile
-    //@route PUT / api/users/:id
-    //@access Private
-    updateUser = catchAsyncHandler(async(req, res) => {
-            const user = await User.findById(req.params.id)
-            if (user) {
-                user.name = req.body.name || user.name
-                user.email = req.body.email || user.email
-                user.isAdmin = req.body.isAdmin || user.isAdmin
-                const updateUser = await user.save()
-                res.json({
-                    _id: updateUser._id,
-                    name: updateUser.name,
-                    email: updateUser.email,
-                    isAdmin: updateUser.isAdmin,
-                })
-            } else {
-                res.status(401)
-                throw new Error('User not found')
-            }
-        })
-        //@desc GET all user profile
-        //@route GET / api/users
-        //@access Private
-    getUsers = catchAsyncHandler(async(req, res) => {
-        const pageSize = 10
-        const page = Number(req.query.page) || 1
-        const count = await User.count({})
-        const users = await User.find({})
-            .limit(pageSize)
-            .skip(pageSize * (page - 1))
-        if (users) {
-            res.json({
-                users,
-                page,
-                pages: Math.ceil(count / pageSize)
-            })
-        } else {
-            res.status(404)
-            throw new Error('Product not found')
-        }
-    })
-
 
     //@desc Delete  user profile
     //@route GET / api/users
@@ -268,7 +225,7 @@ class userControllers {
                 })
             } else {
                 res.status(404)
-                throw new Error('User not found')
+                return next(new ErrorResponse('User not found', 404))
             }
         })
         // @desc    restore a User
@@ -284,7 +241,7 @@ class userControllers {
                 })
             } else {
                 res.status(404)
-                throw new Error('Product not found')
+                return next(new ErrorResponse('Product not found', 404))
             }
         })
         // @desc    force a user
@@ -300,7 +257,7 @@ class userControllers {
             })
         } else {
             res.status(404)
-            throw new Error('Product not found')
+            return next(new ErrorResponse('Product not found', 404))
         }
     })
     getTrashUsers = catchAsyncHandler(async(req, res, next) => {
@@ -319,7 +276,7 @@ class userControllers {
                 })
             } else {
                 res.status(404)
-                throw new Error('Product not found')
+                return next(new ErrorResponse('Product not found', 404))
             }
         })
         //@desc GET  user
@@ -331,7 +288,7 @@ class userControllers {
                 res.json(users)
             } else {
                 res.status(404)
-                throw new Error('User not found')
+                return next(new ErrorResponse('User not found', 404))
             }
         })
         //@desc UPDATE user profile
@@ -352,7 +309,7 @@ class userControllers {
             })
         } else {
             res.status(401)
-            throw new Error('User not found')
+            return next(new ErrorResponse('User not found', 404))
         }
     })
 }

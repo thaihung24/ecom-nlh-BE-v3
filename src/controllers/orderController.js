@@ -16,7 +16,9 @@ class orderControllers {
                 totalPrice,
                 voucher,
             } = req.body
-            const items = await Item.find({ user: req.user._id })
+            const items = await Item.find({
+                user: req.user._id
+            })
 
             if (items && items.length === 0) {
                 res.status(400)
@@ -64,7 +66,9 @@ class orderControllers {
                         })
                         await product.save()
                     })
-                    await Item.deleteMany({ user: req.user._id })
+                    await Item.deleteMany({
+                        user: req.user._id
+                    })
                     res.status(201).json(createdOrder)
                 } else {
                     if (voucher) {
@@ -83,21 +87,55 @@ class orderControllers {
         //@access Private
 
     getOrderById = asyncHandler(async(req, res) => {
-        const order = await Order.findById(req.params.id).populate(
-            'user',
-            'name email'
-        )
-        if (!order) return next(new ErrorResponse('Order not found', 404))
-        res.status(200).json({
-            success: true,
-            message: 'Get order by ID',
-            order,
+            const order = await Order.findById(req.params.id).populate(
+                'user',
+                'name email'
+            )
+            if (!order) return next(new ErrorResponse('Order not found', 404))
+            res.status(200).json({
+                success: true,
+                message: 'Get order by ID',
+                order,
+            })
         })
-    })
+        //@desc Get order by ID
+        //@route GET/api/orders/:id
+        //@access Private
 
-    //@desc UPDATE order tp paid
-    //@route GET/api/orders/:id/pay
-    //@access Private
+    updateOrderById = catchAsyncHandler(async(req, res, next) => {
+            const {
+                shippingAddress,
+                voucher
+            } = req.body
+            const order = await Order.findById(req.params.id).populate(
+                'user',
+            )
+            if (!order) return next(new ErrorResponse('Order not found', 404))
+            order.shippingAddress = shippingAddress
+            if (voucher) {
+                const findVoucher = await Voucher.findById(voucher)
+                if (findVoucher) {
+                    findVoucher.limit -= 1
+                    await findVoucher.save({
+                        validateBeforeSave: false,
+                    })
+                    order.voucher = voucher
+                } else {
+                    return next(new ErrorResponse('Voucher Invalid', 400))
+                }
+            }
+            await order.save({
+                validateBeforeSave: false
+            })
+            res.status(200).json({
+                success: true,
+                message: 'Update order successfully',
+                order,
+            })
+        })
+        //@desc UPDATE order tp paid
+        //@route GET/api/orders/:id/pay
+        //@access Private
     updateOrderToPaid = asyncHandler(async(req, res) => {
             const order = await Order.findById(req.params.id)
             if (order) {
@@ -120,7 +158,9 @@ class orderControllers {
         //@route GET/api/orders/myorders
         //@access Private
     getMyOrders = asyncHandler(async(req, res) => {
-            const orders = await Order.find({ user: req.user._id })
+            const orders = await Order.find({
+                user: req.user._id
+            })
             res.json(orders)
         })
         //@desc GET logged in user orders
@@ -137,7 +177,11 @@ class orderControllers {
                 .limit(pageSize)
                 .skip(pageSize * (page - 1))
             if (orders) {
-                res.json({ orders, page, pages: Math.ceil(count / pageSize) })
+                res.json({
+                    orders,
+                    page,
+                    pages: Math.ceil(count / pageSize)
+                })
             } else {
                 res.status(404)
                 throw new Error('Product not found')
@@ -206,10 +250,19 @@ class orderControllers {
         //@route GET / api/users/TopOrder
         //@access Private
     getTopUserOrder = catchAsyncHandler(async(req, res) => {
-        const topOrder = await Order.aggregate([
-                { $group: { _id: { user: '$user' }, count: { $sum: 1 } } },
-            ])
-            .sort({ count: -1 })
+        const topOrder = await Order.aggregate([{
+                $group: {
+                    _id: {
+                        user: '$user'
+                    },
+                    count: {
+                        $sum: 1
+                    }
+                }
+            }, ])
+            .sort({
+                count: -1
+            })
             .limit(5)
 
         res.json(topOrder)
