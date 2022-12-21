@@ -30,5 +30,6 @@ router
 router
   .route('/:id/reviews')
   .post(verifyToken, productController.createProductReview)
+  .delete(verifyToken, admin, productController.deleteProductReview)
 
 module.exports = router

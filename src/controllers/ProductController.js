@@ -3,6 +3,7 @@ const Manufacturer = require('../models/manufacturer/manufacturer')
 const SubCategory = require('../models/subCategory/subCategory')
 const Category = require('../models/category/category')
 const Comment = require('../models/comment/comment')
+const cloudinary = require('cloudinary')
 const asyncHandler = require('../middleware/async')
 class ProductController {
     //[GET] /api/products
@@ -31,168 +32,251 @@ class ProductController {
             res.status(404)
             throw new Error('Product not found')
         }
+      : {}
+    const count = await Product.count({ ...keyword })
+    const products = await Product.find({ ...keyword })
+      .select('name price rating image productOptions numReviews')
+      .limit(pageSize)
+      .skip(pageSize * (page - 1))
+    if (products) {
+      res.json({ products, page, pages: Math.ceil(count / pageSize) })
+    } else {
+      res.status(404)
+      throw new Error('Product not found')
+    }
+  })
+  getProductById = asyncHandler(async (req, res) => {
+    const product = await Product.findById(req.params.id)
+    const manufacturer = await Manufacturer.findById(product.manufacturer)
+    const subCategory = await SubCategory.findById(product.subCategory)
+    const category = await Category.findById(subCategory.category)
+    const comments = await Comment.find({ product: product._id })
+
+    if (product) {
+      const result = {
+        _id: product._id,
+        manufacturer: manufacturer.name,
+        name: product.name,
+        event: product.event,
+        image: product.image,
+        video: product.video,
+        productOptions: product.productOptions,
+        description: product.description,
+        subCategory: subCategory.name,
+        category: category.name,
+        comments: comments,
+        rating: product.rating,
+        price: product.price,
+        detailSpecs: product.detailSpecs,
+        countInStock: product.countInStock,
+        numReviews: product.numReviews,
+        reviews: product.reviews,
+      }
+      // product.comments = comments
+      // res.json({ ...product, category: category.name })
+      res.status(200).json(result)
+    } else {
+      res.status(404)
+      throw new Error('Product not found')
+    }
+  })
+  // @desc    get product By category
+  // @route   GET /api/products/category/:slug
+  // @access  Public
+  getProductsByCategory = asyncHandler(async (req, res) => {
+    const categoryId = await Category.findOne({
+      name: req.params.slug,
     })
-    getProductById = asyncHandler(async(req, res) => {
-            const product = await Product.findById(req.params.id)
-            const manufacturer = await Manufacturer.findById(product.manufacturer)
-            const subCategory = await SubCategory.findById(product.subCategory)
-            const category = await Category.findById(subCategory.category)
-            const comments = await Comment.find({ product: product._id })
-
-            if (product) {
-                const result = {
-                        _id: product._id,
-                        manufacturer: manufacturer.name,
-                        name: product.name,
-                        event: product.event,
-                        image: product.image,
-                        video: product.video,
-                        productOptions: product.productOptions,
-                        description: product.description,
-                        subCategory: subCategory.name,
-                        category: category.name,
-                        comments: comments,
-                        rating: product.rating,
-                        price: product.price,
-                        detailSpecs: product.detailSpecs,
-                        countInStock: product.countInStock,
-                        numberReview: product.numberReview,
-                        reviews: product.reviews,
-                    }
-                    // product.comments = comments
-                    // res.json({ ...product, category: category.name })
-                res.status(200).json(result)
-            } else {
-                res.status(404)
-                throw new Error('Product not found')
-            }
-        })
-        // @desc    get product By category
-        // @route   GET /api/products/category/:slug
-        // @access  Public
-    getProductsByCategory = asyncHandler(async(req, res) => {
-            const categoryId = await Category.findOne({
-                name: req.params.slug,
-            })
-            const product = await Product.find({})
-                .populate({
-                    path: 'subCategory',
-                    match: { category: categoryId._id },
-                })
-                .select('name image rating price subCategory productOptions')
-            const result = []
-            product.map((item, index) => {
-                if (item.subCategory !== null) {
-                    result.push(item)
-                }
-            })
-            res.json(result)
-        })
-        // @desc    get product By category
-        // @route   GET /api/products/subcategory/:id
-        // @access  Public
-    getProductsBySubCategory = asyncHandler(async(req, res) => {
-            const product = await Product.find({
-                subCategory: req.params.id,
-            }).select('name image rating price')
-            if (product) {
-                res.status(201).json({
-                    success: true,
-                    product,
-                })
-            } else {
-                res.status(404).json({
-                    success: false,
-                    message: 'product not found',
-                })
-            }
-        })
-        // @desc    Delete a product
-        // @route   DELETE /api/products/:id
-        // @access  Private/Admin
-    deleteProduct = asyncHandler(async(req, res) => {
-            const product = await Product.delete({
-                _id: req.params.id,
-            })
-            if (product) {
-                res.json({ message: 'Product removed' })
-            } else {
-                res.status(404)
-                throw new Error('Product not found')
-            }
-        })
-        // @desc    restore a product
-        // @route   DELETE /api/products/:id/restore
-        // @access  Private/Admin
-    restoreProduct = asyncHandler(async(req, res) => {
-            const product = await Product.restore({
-                _id: req.params.id,
-            })
-            if (product) {
-                res.json({ message: 'restored' })
-            } else {
-                res.status(404)
-                throw new Error('Product not found')
-            }
-        })
-        // @desc    restore a product
-        // @route   DELETE /api/products/:id/force
-        // @access  Private/Admin
-    forceProduct = asyncHandler(async(req, res) => {
-            const product = await Product.deleteOne({
-                _id: req.params.id,
-            })
-            if (product) {
-                res.json({ message: 'Product removed' })
-            } else {
-                res.status(404)
-                throw new Error('Product not found')
-            }
-        })
-        // @desc    Create a product
-        // @route   POST /api/products
-        // @access  Private/Admin
-    createProduct = asyncHandler(async(req, res) => {
-        const product = new Product({
-            name: 'Sample name',
-            price: 0,
-            user: req.user._id,
-            manufacturer: Object('6357f372365d2d6acb7fb140'),
-            image: '/images/sample.jpg',
-            brand: 'Sample brand',
-            category: 'Sample category',
-            countInStock: 0,
-            numReviews: 0,
-            description: 'Sample description',
-        })
-        const createdProduct = await product.save()
-        res.status(201).json(createdProduct)
+    const product = await Product.find({})
+      .populate({
+        path: 'subCategory',
+        match: { category: categoryId._id },
+      })
+      .select('name image rating price subCategory productOptions')
+    const result = []
+    product.map((item, index) => {
+      if (item.subCategory !== null) {
+        result.push(item)
+      }
     })
-
-    // @desc    Update a product
-    // @route   PUT /api/products/:id
-    // @access  Private/Admin
-    updateProduct = asyncHandler(async(req, res) => {
-        const { name, price, description, image, brand, category, countInStock } =
-        req.body
-
-        const product = await Product.findById(req.params.id)
-
-        if (product) {
-            product.name = name
-            product.price = price
-            product.description = description
-            product.image = image
-            product.brand = brand
-            product.category = category
-            product.countInStock = countInStock
-            const updatedProduct = await product.save()
-            res.json(updatedProduct)
+    res.json(result)
+  })
+  // @desc    get product By category
+  // @route   GET /api/products/subcategory/:id
+  // @access  Public
+  getProductsBySubCategory = asyncHandler(async (req, res) => {
+    const product = await Product.find({
+      subCategory: req.params.id,
+    }).select('name image rating price')
+    if (product) {
+      res.status(201).json({
+        success: true,
+        product,
+      })
+    } else {
+      res.status(404).json({
+        success: false,
+        message: 'product not found',
+      })
+    }
+  })
+  // @desc    Delete a product
+  // @route   DELETE /api/products/:id
+  // @access  Private/Admin
+  deleteProduct = asyncHandler(async (req, res) => {
+    const product = await Product.delete({
+      _id: req.params.id,
+    })
+    if (product) {
+      res.json({ message: 'Product removed' })
+    } else {
+      res.status(404)
+      throw new Error('Product not found')
+    }
+  })
+  // @desc    restore a product
+  // @route   DELETE /api/products/:id/restore
+  // @access  Private/Admin
+  restoreProduct = asyncHandler(async (req, res) => {
+    const product = await Product.restore({
+      _id: req.params.id,
+    })
+    if (product) {
+      res.json({ message: 'restored' })
+    } else {
+      res.status(404)
+      throw new Error('Product not found')
+    }
+  })
+  // @desc    restore a product
+  // @route   DELETE /api/products/:id/force
+  // @access  Private/Admin
+  forceProduct = asyncHandler(async (req, res) => {
+    const product = await Product.deleteOne({
+      _id: req.params.id,
+    })
+    if (product) {
+      res.json({ message: 'Product removed' })
+    } else {
+      res.status(404)
+      throw new Error('Product not found')
+    }
+  })
+  // @desc    Create a product
+  // @route   POST /api/products
+  // @access  Private/Admin
+  createProduct = asyncHandler(async (req, res) => {
+    // await cloudinary.v2.uploader.upload(req.body.image, {
+    //   folder: 'products',
+    // })
+    // for (let i = 0; i < req.body.productOptions.length; i++) {
+    //   for (let j = 0; i < req.body.productOptions[i].colors.length; j++) {}
+    // }
+    // res.status(201).json(createdProduct)
+    for (let o = 0; o < req.body.productOptions.length; o++) {
+      for (let c = 0; c < req.body.productOptions[o].colors.length; c++) {
+        let images = []
+        if (typeof req.body.productOptions[o].colors[c].images === 'string') {
+          images.push(req.body.productOptions[o].colors[c].images)
         } else {
-            res.status(404)
-            throw new Error('Product not found')
+          images = req.body.productOptions[o].colors[c].images
         }
-    })
+        let imagesLinks = []
+        for (let i = 0; i < images.length; i++) {
+          const result = await cloudinary.v2.uploader.upload(
+            images[i].urlImage,
+            {
+              folder: 'products',
+            }
+          )
+          imagesLinks.push({
+            public_id: result.public_id,
+            urlImage: result.secure_url,
+          })
+        }
+        req.body.productOptions[o].colors[c].images = imagesLinks
+      }
+    }
+    req.body.user = req.user.id
+    req.body.price = req.body.productOptions[0].price
+    req.body.image = req.body.productOptions[0].colors[0].images[0].urlImage
+    const product = await Product.create(req.body)
+
+    if (product) {
+      res.status(201).json({ success: true })
+    } else {
+      res.status(404)
+      throw new Error('Product not found')
+    }
+  })
+
+  // @desc    Update a product
+  // @route   PUT /api/products/:id
+  // @access  Private/Admin
+  updateProduct = asyncHandler(async (req, res) => {
+    let product = await Product.findById(req.params.id)
+    if (product) {
+      // product.name = name
+      // product.price = price
+      // product.description = description
+      // product.image = image
+      // product.brand = brand
+      // product.category = category
+      // product.countInStock = countInStock
+      // const updatedProduct = await product.save()
+      for (let o = 0; o < req.body.productOptions.length; o++) {
+        //o ===Option
+        for (let c = 0; c < req.body.productOptions[o].colors.length; c++) {
+          // c=== Color
+          if (req.body.productOptions[o].colors[c].onChange) {
+            for (
+              let i = 0;
+              i < product.productOptions[o].colors[c].images.length;
+              i++
+            ) {
+              if (product.productOptions[o].colors[c].images[i].public_id) {
+                const result = await cloudinary.v2.uploader.destroy(
+                  product.productOptions[o].colors[c].images[i].public_id
+                )
+              }
+            }
+            let images = []
+            if (
+              typeof req.body.productOptions[o].colors[c].images === 'string'
+            ) {
+              images.push(req.body.productOptions[o].colors[c].images)
+            } else {
+              images = req.body.productOptions[o].colors[c].images
+            }
+            let imagesLinks = []
+            for (let i = 0; i < images.length; i++) {
+              const result = await cloudinary.v2.uploader.upload(
+                images[i].urlImage,
+                {
+                  folder: 'products',
+                }
+              )
+              imagesLinks.push({
+                public_id: result.public_id,
+                urlImage: result.secure_url,
+              })
+            }
+            req.body.productOptions[o].colors[c].images = imagesLinks
+          }
+        }
+      }
+      product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
+        runValidators: true,
+        useFindAndModify: false,
+      })
+      res.status(200).json(product)
+    } else {
+      res.status(404)
+      throw new Error('Product not found')
+    }
+  })
+
 
     // @desc    Create new review
     // @route   POST /api/products/:id/reviews
@@ -233,18 +317,49 @@ class ProductController {
             )
             product.rating = product.rating / product.reviews.length
 
-            await product.save()
-            res.status(201).json({ message: 'Review added' })
-        } else {
-            res.status(404)
-            throw new Error('Product not found')
-        }
-    })
+      await product.save()
+      res.status(201).json({ message: 'Review added' })
+    } else {
+      res.status(404)
+      throw new Error('Product not found')
+    }
+  })
+  deleteProductReview = asyncHandler(async (req, res) => {
+    const product = await Product.findById(req.params.id)
 
-    // @desc    Get top rated products
-    // @route   GET /api/products/top
-    // @access  Public
-    getTopProducts = asyncHandler(async(req, res) => {
+    if (product) {
+      const reviews = product.reviews.filter(
+        (review) => review._id.toString() !== req.query.reviewId.toString()
+      )
+      const numReviews = reviews.length
+      const rating =
+        product.reviews.reduce((acc, item) => item.rating + acc, 0) /
+        reviews.length
+      await Product.findByIdAndUpdate(
+        req.params.id,
+        {
+          reviews,
+          rating,
+          numReviews,
+        },
+        {
+          new: true,
+          runValidators: true,
+          useFindAndModify: false,
+        }
+      )
+      res.status(200).json({
+        success: true,
+      })
+    } else {
+      res.status(404)
+      throw new Error('Product not found')
+    }
+  })
+  // @desc    Get top rated products
+  // @route   GET /api/products/top
+  // @access  Public
+  getTopProducts = asyncHandler(async(req, res) => {
             const categoryId = req.body.categoryId ? req.body.categoryId : null
             if (categoryId) {
                 const products = await Product.find({})
@@ -254,8 +369,10 @@ class ProductController {
                             category: categoryId,
                         },
                     })
-                    .sort({ rating: -1 })
-                    .select('name rating')
+                    .sort({
+                        rating: -1
+                    })
+                    .select('name ratting price image')
                 const arr = []
                 products.map((product) => {
                     if (product.subCategory !== null) {
@@ -270,9 +387,11 @@ class ProductController {
                 })
             } else {
                 const products = await Product.find({})
-                    .sort({ rating: -1 })
+                    .sort({
+                        rating: -1
+                    })
                     .limit(6)
-                    .select('name rating')
+                    .select('name ratting price image')
                 res.json(products)
             }
         })

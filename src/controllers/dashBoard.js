@@ -83,5 +83,47 @@ class dashBoardControllers {
       .limit(5)
     res.json(lastOrder)
   })
+  getAnalytics = asyncHandler(async (req, res) => {
+    const orderAnalytics = await Order.aggregate([
+      {
+        $group: {
+          _id: {
+            year: {
+              $year: '$createdAt',
+            },
+            month: {
+              $month: '$createdAt',
+            },
+          },
+          countOrder: {
+            $sum: 1,
+          },
+        },
+      },
+    ])
+    const orderCancelAnalytics = await Order.aggregate([
+      {
+        $match: {
+          'status.statusNow': 'pending' || 'Pending',
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: {
+              $year: '$createdAt',
+            },
+            month: {
+              $month: '$createdAt',
+            },
+          },
+          countOrder: {
+            $sum: 1,
+          },
+        },
+      },
+    ])
+    res.json({ orderAnalytics, orderCancelAnalytics })
+  })
 }
 module.exports = new dashBoardControllers()
