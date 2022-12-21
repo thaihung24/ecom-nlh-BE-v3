@@ -11,7 +11,10 @@ const generateToken = require('../utils/generateToken.js')
 class authController {
     // [POST] /login
     login = catchAsyncHandler(async(req, res, next) => {
-            const { email, password } = req.body
+            const {
+                email,
+                password
+            } = req.body
                 // check empty
             if (!email || !password) {
                 return next(new ErrorResponse(`Missing email or password`, 400))
@@ -30,7 +33,14 @@ class authController {
         })
         //[POST] /register
     register = catchAsyncHandler(async(req, res, next) => {
-            const { email, password, gender, addressForm, phone, name } = req.body
+            const {
+                email,
+                password,
+                gender,
+                addressForm,
+                phone,
+                name
+            } = req.body
             if (!email | !password) {
                 return next(new ErrorResponse(`Missing email or password`, 400))
             }
@@ -64,7 +74,7 @@ class authController {
             // const resetUrl = `${req.protocol}://${req.get('host')}/api/auth/verify-email/${verifyToken}`;
             const resetUrl = `${process.env.CLIENT_URL}/api/auth/verify-email/${verifyToken}`
 
-            const message = `Your verify token for active ${newUser.fullName} is as follow:\n\n${resetUrl}\n\nLink will be expired after 30 minutes\n\nIf you have not requested this email, then ignore it.`
+            const message = `Your verify token for active ${newUser.name} is as follow:\n\n${resetUrl}\n\nLink will be expired after 30 minutes\n\nIf you have not requested this email, then ignore it.`
 
             try {
                 await sendEmail({
@@ -89,7 +99,9 @@ class authController {
         })
         // [POST] /verify-email/:token
     verifyEmail = catchAsyncHandler(async(req, res, next) => {
-            const { token } = req.params
+            const {
+                token
+            } = req.params
 
             // Hash URL token
             const verifyToken = crypto.createHash('sha256').update(token).digest('hex')
@@ -112,12 +124,103 @@ class authController {
             })
             sendToken(user, 200, res)
         })
-        //#### OAUTH2
-        // Google
-    googleAuth = catchAsyncHandler(async(req, res, next) => {
-            return passport.authenticate('google')
+        // [POST] /logout
+    logOut = catchAsyncHandler(async(req, res, next) => {
+            res.cookie(`accessToken`, null, {
+                expires: new Date(Date.now()),
+                httpOnly: true
+            })
+            res.status(200).json({
+                success: true,
+                message: "Logout successfully"
+            })
         })
-        //
+        //[POST] /password/forgot
+    forgotPassword = catchAsyncHandler(async(req, res, next) => {
+            const user = await User.findOne({
+                email: req.body.email
+            });
+            if (!user) return next(new ErrorResponse('User not found, email haven\'t register yet ', 404))
+
+            const resetPasswordToken = user.verifyEmailToken()
+
+            await user.save({
+                validateBeforeSave: false
+            })
+
+
+            // Mail sending 
+            // Create reset password url
+            const resetUrl = `${process.env.CLIENT_URL}/api/auth/password/resetpassword/${resetPasswordToken}`;
+
+            const message = `Your verify token for reset ${user.name}'s password is as follow:\n\n${resetUrl}\n\nLink will be expired after 30 minutes\n\nIf you have not requested this email, then ignore it.`
+            try {
+
+                await sendEmail({
+                    email: user.email,
+                    subject: 'NLH-ecom Password Recovery',
+                    message
+                })
+
+                res.status(200).json({
+                    success: true,
+                    message: `Email sent to: ${user.email}`
+                })
+
+            } catch (error) {
+                user.resetPasswordToken = undefined;
+                user.resetPasswordExpire = undefined;
+
+                await user.save({
+                    validateBeforeSave: false
+                });
+
+                return next(new ErrorHandler(error.message, 500))
+            }
+        })
+        //[PUT]  /password/resetpassword/:token
+    resetPassword = catchAsyncHandler(async(req, res, next) => {
+
+            if (!req.body.password) return next(new ErrorResponse("Missing password"))
+            const token = crypto.createHash('sha256').update(req.params.token).digest('hex');
+            console.log(token)
+            const user = await User.findOne({
+                emailCodeToken: token,
+                emailCodeExpires: {
+                    $gt: Date.now(),
+
+                }
+            })
+            if (!user) return next(new ErrorResponse("Invalid token or expired token, try again", 404))
+
+            user.password = req.body.password
+
+            await user.save({
+                validateBeforeSave: false
+            })
+
+        })
+        //[PUT] /password/change
+    changePassword = catchAsyncHandler(async(req, res, next) => {
+        const user = await User.findById(req.user._id).select("+password")
+        if (!user) return next(new ErrorResponse("User not found", 404))
+        const {
+            enteredPassword,
+            newPassword
+        } = req.body
+        if (!enteredPassword || !newPassword) return next(new ErrorResponse("Missing password", 400))
+        const checkPassword = await user.comparePassword(enteredPassword)
+        if (!checkPassword) return next(new ErrorResponse("Password incorrect", 400))
+        user.password = newPassword
+        await user.save({
+            validateBeforeSave: false
+        })
+        res.status(200).json({
+            success: true,
+            message: "Update user password successfully"
+        })
+    })
+
 }
 
 module.exports = new authController()
