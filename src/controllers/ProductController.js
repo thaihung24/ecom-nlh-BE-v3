@@ -19,17 +19,7 @@ class ProductController {
                 $options: 'i',
             },
         } : {}
-        const count = await Product.count({...keyword })
-        const products = await Product.find({...keyword })
-            .select('name price rating image productOptions')
-            .limit(pageSize)
-            .skip(pageSize * (page - 1))
-        if (products) {
-            res.json({ products, page, pages: Math.ceil(count / pageSize) })
-        } else {
-            res.status(404)
-            throw new Error('Product not found')
-        }: {}
+
         const count = await Product.count({...keyword })
         const products = await Product.find({...keyword })
             .select('name price rating image productOptions numReviews')
