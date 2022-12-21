@@ -175,6 +175,14 @@ class orderControllers {
     const order = await Order.findById(req.params.id)
     if (order) {
       order.status = req.body.status
+      if (req.body.status.statusNow === 'Shipped') {
+        if (!order.isPaid) {
+          order.isPaid = true
+          order.paidAt = Date.now()
+        }
+        order.isDelivered = true
+        order.deliveredAt = Date.now()
+      }
       const updateOrder = await order.save()
       if (updateOrder) {
         res.status(200).json({

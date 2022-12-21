@@ -10,6 +10,9 @@ const cartRoute = require('./cartRoute')
 const voucherRoute = require('./voucherRoute')
 const eventRoute = require('./eventRoute')
 const dashBoard = require('./dashBoardRoute')
+const categoryRoute = require('./categoryRoute')
+const subCategoryRoute = require('./subCategoryRoute')
+const manufacturerRoute = require('./manufacturerRoute')
 // const swaggerUI = require('swagger-ui-express')
 // const swaggerJsDoc = require('swagger-jsdoc')
 //
@@ -35,6 +38,9 @@ function route(app) {
   app.use('/api/events', eventRoute)
   //dashBoard
   app.use('/api/dashBoard', dashBoard)
+  app.use('/api/categories', categoryRoute)
+  app.use('/api/subcategories', subCategoryRoute)
+  app.use('/api/manufacturers', manufacturerRoute)
   // main
   app.use('/', (req, res, next) => {
     next(new ErrorResponse(`Page not found`, 404, null, 'Not found'))
