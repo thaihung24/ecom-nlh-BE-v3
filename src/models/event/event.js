@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const Product = require('../product/productModel')
+
 
 const eventSchema = mongoose.Schema({
         user: {

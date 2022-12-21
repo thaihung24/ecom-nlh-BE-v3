@@ -94,7 +94,36 @@ class orderControllers {
       order,
     })
   })
+  //@desc Get order by ID
+  //@route GET/api/orders/:id
+  //@access Private
 
+  updateOrderById = catchAsyncHandler(async (req, res, next) => {
+    const { shippingAddress, voucher } = req.body
+    const order = await Order.findById(req.params.id).populate('user')
+    if (!order) return next(new ErrorResponse('Order not found', 404))
+    order.shippingAddress = shippingAddress
+    if (voucher) {
+      const findVoucher = await Voucher.findById(voucher)
+      if (findVoucher) {
+        findVoucher.limit -= 1
+        await findVoucher.save({
+          validateBeforeSave: false,
+        })
+        order.voucher = voucher
+      } else {
+        return next(new ErrorResponse('Voucher Invalid', 400))
+      }
+    }
+    await order.save({
+      validateBeforeSave: false,
+    })
+    res.status(200).json({
+      success: true,
+      message: 'Update order successfully',
+      order,
+    })
+  })
   //@desc UPDATE order tp paid
   //@route GET/api/orders/:id/pay
   //@access Private
@@ -140,7 +169,7 @@ class orderControllers {
       res.json({ orders, page, pages: Math.ceil(count / pageSize) })
     } else {
       res.status(404)
-      throw new Error('Product not found')
+      throw new Error('Product not founded')
     }
   })
   //@desc PUT order by ID
@@ -165,11 +194,11 @@ class orderControllers {
   //@access Private
   //In body
   /*
-  status:{
-    statusNow:"cancel",
-    description:"Ly do huy"
-  }
-  */
+    status:{
+      statusNow:"cancel",
+      description:"Ly do huy"
+    }
+    */
   //in Body
   updateStatusOrder = asyncHandler(async (req, res, next) => {
     const order = await Order.findById(req.params.id)
