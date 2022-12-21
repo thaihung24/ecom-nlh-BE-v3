@@ -169,7 +169,7 @@ class orderControllers {
       res.json({ orders, page, pages: Math.ceil(count / pageSize) })
     } else {
       res.status(404)
-      throw new Error('Product not found')
+      throw new Error('Product not founded')
     }
   })
   //@desc PUT order by ID
