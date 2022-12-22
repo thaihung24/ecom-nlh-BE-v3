@@ -205,6 +205,7 @@ class authController {
         })
         //[PUT] /password/change
     changePassword = catchAsyncHandler(async(req, res, next) => {
+
         const user = await User.findById(req.user._id).select("+password")
         if (!user) return next(new ErrorResponse("User not found", 404))
         const {
