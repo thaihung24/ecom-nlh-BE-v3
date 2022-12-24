@@ -105,13 +105,13 @@ class authController {
 
             // Hash URL token
             const verifyToken = crypto.createHash('sha256').update(token).digest('hex')
-
             const user = await User.findOne({
                 emailCodeToken: verifyToken,
                 emailCodeExpires: {
                     $gt: Date.now(),
                 },
             })
+            console.log(user)
 
             if (!user) {
                 return next(
@@ -119,6 +119,8 @@ class authController {
                 )
             }
             user.enable = true
+            user.emailCodeExpires = undefined
+            user.emailCodeToken = undefined
             await user.save({
                 validateBeforeSave: false,
             })
@@ -137,6 +139,7 @@ class authController {
         })
         //[POST] /password/forgot
     forgotPassword = catchAsyncHandler(async(req, res, next) => {
+            console.log(req.body)
             const user = await User.findOne({
                 email: req.body.email
             });
@@ -151,9 +154,9 @@ class authController {
 
             // Mail sending 
             // Create reset password url
-            const resetUrl = `${process.env.CLIENT_URL}/api/auth/password/resetpassword/${resetPasswordToken}`;
+            const resetUrl = `${resetPasswordToken}`;
 
-            const message = `Your verify token for reset ${user.name}'s password is as follow:\n\n${resetUrl}\n\nLink will be expired after 30 minutes\n\nIf you have not requested this email, then ignore it.`
+            const message = `Your verify token for reset ${user.name}'s password is :\n\n${resetUrl}\n\nCode will be expired after 30 minutes\n\nIf you have not requested this email, then ignore it.`
             try {
 
                 await sendEmail({
@@ -167,7 +170,7 @@ class authController {
                     message: `Email sent to: ${user.email}`
                 })
 
-            } catch (error) {
+            } catch (e) {
                 user.resetPasswordToken = undefined;
                 user.resetPasswordExpire = undefined;
 
@@ -175,33 +178,34 @@ class authController {
                     validateBeforeSave: false
                 });
 
-                return next(new ErrorHandler(error.message, 500))
+                return next(new ErrorResponse(e.message, 500))
             }
         })
         //[PUT]  /password/resetpassword/:token
     resetPassword = catchAsyncHandler(async(req, res, next) => {
-
             if (!req.body.password) return next(new ErrorResponse("Missing password"))
             const token = crypto.createHash('sha256').update(req.params.token).digest('hex');
-            console.log(token)
             const user = await User.findOne({
                 emailCodeToken: token,
                 emailCodeExpires: {
                     $gt: Date.now(),
-
                 }
             })
             if (!user) return next(new ErrorResponse("Invalid token or expired token, try again", 404))
-
             user.password = req.body.password
-
+            user.emailCodeExpires = undefined
+            user.emailCodeToken = undefined
             await user.save({
                 validateBeforeSave: false
             })
-
+            res.status(200).json({
+                success: true,
+                message: "Password reset successfully",
+            })
         })
         //[PUT] /password/change
     changePassword = catchAsyncHandler(async(req, res, next) => {
+
         const user = await User.findById(req.user._id).select("+password")
         if (!user) return next(new ErrorResponse("User not found", 404))
         const {

@@ -6,7 +6,7 @@ const Item = require('../models/cart/Item')
 const Product = require('../models/product/productModel')
 const Voucher = require('../models/voucher/voucher')
 class orderControllers {
-    addOrderItems = catchAsyncHandler(async(req, res, next) => {
+    addOrderItems = asyncHandler(async(req, res, next) => {
             const {
                 shippingAddress,
                 paymentMethod,
@@ -19,43 +19,38 @@ class orderControllers {
             const items = await Item.find({
                 user: req.user._id
             })
-            let order = new Order({
-                orderItems: [],
-                user: req.user._id,
-                shippingAddress,
-                paymentMethod,
-                itemsPrice,
-                taxPrice,
-                shippingPrice,
-                totalPrice,
-            })
-            if (items && items.length === 0) {
 
-                return next(new ErrorResponse("Order not found", 404))
+            if (items && items.length === 0) {
+                res.status(400)
+                throw new Error(` no Order item `)
             } else {
                 const orderItems = []
                 items.map((item) => {
                     orderItems.push(item.item)
                 })
-                order.orderItems = orderItems
                 if (voucher) {
                     const findVoucher = await Voucher.findById(voucher)
 
                     if (findVoucher) {
-                        order.voucher = findVoucher._id
                         findVoucher.limit -= 1
                         await findVoucher.save()
                     } else {
                         return next(new ErrorResponse('Voucher not found', 400))
                     }
                 }
-
+                const order = new Order({
+                    orderItems,
+                    user: req.user._id,
+                    shippingAddress,
+                    paymentMethod,
+                    itemsPrice,
+                    taxPrice,
+                    shippingPrice,
+                    totalPrice,
+                    voucher,
+                })
                 const createdOrder = await order.save()
-
                 if (createdOrder) {
-                    await Item.deleteMany({
-                        user: req.user._id
-                    })
                     order.orderItems.map(async(item) => {
                         const product = await Product.findById(item.product)
                         product.productOptions.forEach((Option, index) => {
@@ -68,32 +63,33 @@ class orderControllers {
                                 })
                             }
                         })
-                        await product.save({
-                            validateBeforeSave: false,
-                        })
+                        await product.save()
                     })
+                    await Item.deleteMany({
+                        user: req.user._id
+                    })
+                    res.status(201).json({
+                        success: true,
+                        order: createdOrder,
+                        message: "Order created successfully"
+                    })
+                } else {
+                    if (voucher) {
+                        const findVoucher = await Voucher.findById(voucher)
+                        await findVoucher.save()
+                        if (findVoucher) {
+                            findVoucher.limit += 1
+                        }
+                    }
+                    return next(new ErrorResponse('Add order fail', 400))
                 }
-                res.status(200).json({
-                    success: true,
-                    message: "Order successfully created",
-                    order: createdOrder
-                })
             }
-        })
-        //@desc GET logged in user orders
-        //@route GET/api/orders/myorders
-        //@access Private
-    getMyOrders = catchAsyncHandler(async(req, res) => {
-            const orders = await Order.find({
-                user: req.user._id
-            })
-            res.json(orders)
         })
         //@desc Get order by ID
         //@route GET/api/orders/:id
         //@access Private
 
-    getOrderById = catchAsyncHandler(async(req, res) => {
+    getOrderById = asyncHandler(async(req, res) => {
             const order = await Order.findById(req.params.id).populate(
                 'user',
                 'name email'
@@ -114,9 +110,7 @@ class orderControllers {
                 shippingAddress,
                 voucher
             } = req.body
-            const order = await Order.findById(req.params.id).populate(
-                'user',
-            )
+            const order = await Order.findById(req.params.id).populate('user')
             if (!order) return next(new ErrorResponse('Order not found', 404))
             order.shippingAddress = shippingAddress
             if (voucher) {
@@ -132,7 +126,7 @@ class orderControllers {
                 }
             }
             await order.save({
-                validateBeforeSave: false
+                validateBeforeSave: false,
             })
             res.status(200).json({
                 success: true,
@@ -140,33 +134,9 @@ class orderControllers {
                 order,
             })
         })
-        //@desc GET logged in user orders
-        //@route GET/api/orders/
-        //@access Private Admin
-    getAllOrders = catchAsyncHandler(async(req, res) => {
-            const orders = await Order.find({})
-            res.json(orders)
-        })
-        //@desc Get order by ID
-        //@route GET/api/orders/:id
+        //@desc UPDATE order tp paid
+        //@route GET/api/orders/:id/pay
         //@access Private
-
-    getOrderById = asyncHandler(async(req, res) => {
-        const order = await Order.findById(req.params.id).populate(
-            'user',
-            'name email'
-        )
-        if (!order) return next(new ErrorResponse('Order not found', 404))
-        res.status(200).json({
-            success: true,
-            message: 'Get order by ID',
-            order,
-        })
-    })
-
-    //@desc UPDATE order tp paid
-    //@route GET/api/orders/:id/pay
-    //@access Private
     updateOrderToPaid = asyncHandler(async(req, res) => {
             const order = await Order.findById(req.params.id)
             if (order) {
@@ -190,10 +160,8 @@ class orderControllers {
         //@access Private
     getMyOrders = asyncHandler(async(req, res) => {
             const orders = await Order.find({
-                user: req.user._id,
-            }).sort([
-                ['createdAt', '-1']
-            ])
+                user: req.user._id
+            })
             res.json(orders)
         })
         //@desc GET logged in user orders
@@ -217,7 +185,7 @@ class orderControllers {
                 })
             } else {
                 res.status(404)
-                throw new Error('Product not found')
+                throw new Error('Product not founded')
             }
         })
         //@desc PUT order by ID
@@ -242,16 +210,24 @@ class orderControllers {
     //@access Private
     //In body
     /*
-    status:{
-      statusNow:"cancel",
-      description:"Ly do huy"
-    }
-    */
+      status:{
+        statusNow:"cancel",
+        description:"Ly do huy"
+      }
+      */
     //in Body
     updateStatusOrder = asyncHandler(async(req, res, next) => {
             const order = await Order.findById(req.params.id)
             if (order) {
                 order.status = req.body.status
+                if (req.body.status.statusNow === 'Shipped') {
+                    if (!order.isPaid) {
+                        order.isPaid = true
+                        order.paidAt = Date.now()
+                    }
+                    order.isDelivered = true
+                    order.deliveredAt = Date.now()
+                }
                 const updateOrder = await order.save()
                 if (updateOrder) {
                     res.status(200).json({
@@ -293,4 +269,5 @@ class orderControllers {
         res.json(topOrder)
     })
 }
+
 module.exports = new orderControllers()
