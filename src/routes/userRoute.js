@@ -1,18 +1,34 @@
 const express = require('express')
 const router = express.Router()
-const userCOntrollers = require('../controllers/userController')
-const { protect, admin } = require('../middleware/authMiddleware.js')
-//@desc Fetch single products
-//@route GET /api/products/:id
-//@access Public]]
+const userController = require('../controllers/userController')
+const verifyToken = require('../middleware/auth')
+const {
+    admin
+} = require('../middleware/authMiddleware.js')
+const { userParser } = require("../utils/cloudinaryConfig")
+router.route('/trash').get(verifyToken, admin, userController.getTrashUsers)
+    //[PUT] /api/users/profile
+    //[GET] /api/users/profile
 router
-  .route('/')
-  .post(userCOntrollers.registerUser)
-  .get(protect, admin, userCOntrollers.getUsers)
-router.post('/login', userCOntrollers.authUser)
+    .route('/profile')
+    .get(verifyToken, userController.getUserProfile)
+    .put(verifyToken, userController.updateUserProfile)
 router
-  .route('/profile')
-  .get(protect, userCOntrollers.getUserProfile)
-  .put(protect, userCOntrollers.updateUserProfile)
+    .route('/:id/restore')
+    .patch(verifyToken, admin, userController.restoreUser)
+router.route('/:id/force').delete(verifyToken, admin, userController.forceUser)
+router.route('/address/:addressID').get(verifyToken, userController.getAddress).delete(verifyToken, userController.deleteAddress)
+
+// avatar update
+router.route('/avatar').put(verifyToken, userParser.single("image"), userController.updateUserAvatar)
+
+//[PUT] /api/users/profile
+//[GET] /api/users/profile
+router.route('/').get(verifyToken, admin, userController.getUsers)
+router
+    .route('/:id')
+    .delete(verifyToken, admin, userController.deleteUser)
+    .get(verifyToken, admin, userController.getUserById)
+    .put(verifyToken, admin, userController.updateUser)
 
 module.exports = router

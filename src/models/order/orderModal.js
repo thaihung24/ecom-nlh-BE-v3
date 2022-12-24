@@ -1,108 +1,158 @@
 const mongoose = require('mongoose')
-const orderSchema = mongoose.Schema(
-  {
+const orderSchema = mongoose.Schema({
     user: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      ref: 'users',
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'users',
     },
-    orderItems: [
-      {
+    isConfirm: {
+        type: Boolean,
+        required: true,
+        default: false,
+    },
+    status: {
+      statusNow: {
+        type: String,
+        required: true,
+        default: 'pending',
+      },
+      description: {
+        type: String,
+        required: true,
+        default: 'Đang đợi admin xử lý.',
+      },
+    },
+    orderItems: [{
         name: {
-          type: String,
-          required: true,
+            type: String,
+            required: true,
         },
-        qty: {
-          type: Number,
-          required: true,
+        info: {
+          colorName: {
+            type: String,
+            required: true,
+          },
+          optionName: {
+            type: String,
+            required: true,
+          },
+          listingPrice: {
+            type: Number,
+          },
+          manufacturerName: {
+            type: String,
+            require: true,
+            default: '',
+          },
+          subCategoryName: {
+            type: String,
+            require: true,
+            default: '',
+          },
+          promotionDescription: {
+            type: String,
+            require: true,
+            default: '',
+          },
+        },
+        quantity: {
+            type: Number,
+            required: true,
         },
         image: {
-          type: String,
-          required: true,
+            type: String,
+            required: true,
         },
         price: {
-          type: Number,
-          required: true,
+            type: Number,
+            required: true,
         },
         product: {
-          type: mongoose.Schema.Types.ObjectId,
-          required: true,
-          ref: 'Product',
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            ref: 'Product',
         },
-      },
-    ],
+        color: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+        },
+        option: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+        },
+    }, ],
     shippingAddress: {
-      address: {
-        type: String,
-        required: true,
-      },
-      city: {
-        type: String,
-        required: true,
-      },
-      postalCode: {
-        type: String,
-        required: true,
-      },
-      country: {
-        type: String,
-        required: true,
-      },
+        address: {
+            type: String,
+            required: true,
+        },
+        city: {
+            type: String,
+            required: true,
+        },
+
+        country: {
+            type: String,
+            required: true,
+        },
     },
     paymentMethod: {
-      type: String,
-      required: true,
+
+        type: String,
+        required: true,
     },
     paymentResult: {
-      id: {
-        type: String,
-      },
-      status: {
-        type: String,
-      },
-      update_time: {
-        type: String,
-      },
-      email_address: {
-        type: String,
-      },
+        id: {
+            type: String,
+        },
+        status: {
+            type: String,
+        },
+        update_time: {
+            type: String,
+        },
+        email_address: {
+            type: String,
+        },
     },
     taxPrice: {
-      type: Number,
-      required: true,
-      default: 0.0,
+        type: Number,
+        required: true,
+        default: 0.0,
     },
     shippingPrice: {
-      type: Number,
-      required: true,
-      default: 0.0,
+        type: Number,
+        required: true,
+        default: 0.0,
     },
     totalPrice: {
-      type: Number,
-      required: true,
-      default: 0.0,
+        type: Number,
+        required: true,
+        default: 0.0,
     },
     isPaid: {
-      type: Boolean,
-      required: true,
-      default: false,
+        type: Boolean,
+        required: true,
+        default: false,
     },
     paidAt: {
-      type: Date,
+        type: Date,
     },
     isDelivered: {
-      type: Boolean,
-      required: true,
-      default: false,
+        type: Boolean,
+        required: true,
+        default: false,
     },
     deliveredAt: {
-      type: Date,
+        type: Date,
     },
-  },
-  {
+    voucher: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Voucher',
+    },
+}, {
     timestamps: true,
-  }
-)
+})
 
 const Order = mongoose.model('Order', orderSchema)
 module.exports = Order

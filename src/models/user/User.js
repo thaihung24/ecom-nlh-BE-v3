@@ -1,9 +1,12 @@
 const bcrypt = require('bcryptjs')
+const mongoose = require('mongoose')
+const slugify = require('slugify')
+const jwt = require('jsonwebtoken')
+const crypto = require('crypto')
+const mongooseDelete = require('mongoose-delete')
+const ErrorResponse = require('../../utils/ErrorResponse')
 
-const mongoose = require("mongoose");
-const slugify = require("slugify");
-const geocoder = require("../../utils/geocoder")
-    // Schema
+// Schema
 const UserSchema = new mongoose.Schema({
     email: {
         // /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
@@ -15,43 +18,28 @@ const UserSchema = new mongoose.Schema({
         require: [true, 'Please add a email'],
         unique: true,
     },
+    facebookID: {
+        type: String,
+        default: null
+    },
     password: {
         type: String,
         require: [true, 'Please add password'],
         //   select: false,
         minlength: 3,
+        select: false,
     },
     addresses: [{
         idDefault: {
             type: Boolean,
             default: false,
         },
-        address: {
-            type: String,
-            require: true,
+        address: String,
+        detailAddress: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'address',
         },
     }, ],
-    addressTest: {
-        type: String,
-        required: [true, 'Please add an address']
-    },
-    location: {
-        // GeoJSON Point
-        type: {
-            type: String,
-            enum: ['Point']
-        },
-        coordinates: {
-            type: [Number],
-            index: '2dsphere'
-        },
-        formattedAddress: String,
-        street: String,
-        city: String,
-        state: String,
-        zipcode: String,
-        country: String
-    },
     phone: String,
     name: String,
     fullName: String,
@@ -62,15 +50,30 @@ const UserSchema = new mongoose.Schema({
         type: String,
         default: 'TGDD',
     },
-    // role
+    avatar: {
+        public_id: {
+            type: String,
+            required: true,
+            default: 'avatars/muqwmegdp6xzikzgsdkw',
+        },
+        url: {
+            type: String,
+            required: true,
+            default: 'https://res.cloudinary.com/dw8fi9npd/image/upload/v1667137085/avatars/muqwmegdp6xzikzgsdkw.jpg',
+        },
+    },
+    //  
     isAdmin: {
         type: Boolean,
         required: true,
         default: false,
     },
+
+    emailCodeToken: String,
+    emailCodeExpires: Date,
     enable: {
         type: Boolean,
-        default: true,
+        default: false,
     },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
@@ -81,53 +84,71 @@ const UserSchema = new mongoose.Schema({
     },
 }, {
     timestamps: true,
+
+})
+UserSchema.plugin(mongooseDelete, {
+    overrideMethods: 'all',
+    deleteAt: true,
 })
 UserSchema.methods.matchPassword = async function(enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password)
+
 }
 
-
-UserSchema.pre('save', async function(next) {
-        if (!this.isModified('password')) {
-            next()
-        }
-        const salt = await bcrypt.genSalt(10)
-        this.password = await bcrypt.hash(this.password, salt)
-    })
-    // increase
-
 // Slugify
-UserSchema.pre("save", function(next) {
-    let fullNameRaw = this.firstName ? `${this.firstName} ${this.lastName}` : this.name
+UserSchema.pre('save', function(next) {
+    let fullNameRaw = this.firstName ?
+        `${this.firstName} ${this.lastName}` :
+        this.name
     this.fullName = slugify(fullNameRaw, {
-        replacement: "-",
+        replacement: '-',
         trim: true,
         lower: true,
     })
-    next();
-});
-// Geocoder to create location field
-UserSchema.pre('save', async function(next) {
-    const loc = await geocoder.geocode(this.addressTest);
-    this.location = {
-        type: 'Point',
-        coordinates: [loc[0].longitude, loc[0].latitude],
-        formattedAddress: loc[0].formattedAddress,
-        street: loc[0].streetName,
-        city: loc[0].city,
-        state: loc[0].stateCode,
-        country: loc[0].countryCode,
-        zipcode: loc[0].zipcode,
 
+    next()
+})
+
+// generate access token
+UserSchema.methods.getJwtToken = function() {
+        return jwt.sign({
+                id: this._id,
+            },
+            process.env.JWT_SECRET_KEY, {
+                expiresIn: process.env.JWT_EXPIRES_TIME,
+            }
+        )
+    }
+    // Encrypting password before saving user
+UserSchema.pre('save', async function(next) {
+    if (!this.isModified('password')) {
+        next()
     }
 
-    // Don't save address in DC
-    this.addressTest = undefined;
+    this.password = await bcrypt.hash(this.password, 10)
+})
 
-    next();
-});
+// Compare user password
+UserSchema.methods.comparePassword = async function(enteredPassword) {
+        return await bcrypt.compare(enteredPassword, this.password)
+    }
+    // Generate code to verify email
+UserSchema.methods.verifyEmailToken = function() {
+    // Generate token
+    const verifyToken = crypto.randomBytes(20).toString('hex')
 
+    // Hash and set to resetPasswordToken
+    this.emailCodeToken = crypto
+        .createHash('sha256')
+        .update(verifyToken)
+        .digest('hex')
+        //expires
+    this.emailCodeExpires = Date.now() + 60 * 1000 * 30
+    console.log(Date.now() + 60 * 1000 * 30)
+    console.log(Date.now())
 
+    return verifyToken
+}
 
 // exports
 let User = mongoose.model('users', UserSchema)

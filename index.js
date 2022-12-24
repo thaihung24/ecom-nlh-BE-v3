@@ -1,31 +1,99 @@
 // initial
-const express = require('express')
-require('dotenv').config()
-const app = express()
+const express = require("express");
+const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
+const swaggerUI = require("swagger-ui-express");
+const swaggerJsDoc = require("swagger-jsdoc");
+// const swaggerAutogen = require('swagger-autogen')()
+// const endpointsFiles = ['./routers/personRouter.js']
+require("dotenv").config();
+const app = express();
+const passport = require("passport");
+
+app.use(
+    bodyParser.urlencoded({
+        extended: true,
+    })
+);
+
+app.use(bodyParser.json());
+//options swagger
+
+const options = {
+    definition: {
+        info: {
+            title: "TLCN K19 API",
+            version: "1.0.0",
+            description: "TLCN K19  Ecommerce API",
+        },
+        servers: ["http://localhost:5000"],
+    },
+    apis: ["./routes/*.js"],
+};
+const specs = swaggerJsDoc(options);
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
+
+const expressSession = require("express-session");
+app.use(
+    expressSession({
+        secret: process.env.EXPRESS_SESSION_SECRET,
+        resave: true,
+        saveUninitialized: true,
+    })
+);
+app.use(passport.initialize());
+app.use(passport.session());
+
+
+//cors
+const cors = require("cors");
+const corsOptions = {
+    origin: ["http://localhost:3000", "https://e-com-nlh-4058cxa5b-danbaonguyen2001.vercel.app", "https://e-com-nlh-b84cs3xla-danbaonguyen2001.vercel.app"],
+    credentials: true, //access-control-allow-credentials:true
+    optionSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
 
 // middle ware for dev log
-const morgan = require('morgan')
+const morgan = require("morgan");
 
-if (process.env.NODE_ENV == 'develop') {
-  app.use(morgan('dev'))
+if (process.env.NODE_ENV == "develop") {
+    app.use(morgan("dev"));
 }
-
 //
-app.use(express.json())
+app.use(cookieParser());
+//
+app.use(express.json());
 //routes
-const route = require('./src/routes')
+const route = require("./src/routes");
 
-route(app)
+route(app);
 
 // Error
-const errorHandler = require('./src/middleware/error')
-app.use(errorHandler)
-// db
-const db = require('./src/config/db')
+const errorHandler = require("./src/middleware/error");
+app.use(errorHandler);
 
-db.connect()
+
+// db
+const db = require("./src/config/db");
+
+db.connect();
 
 //context
-const PORT = process.env.PORT
+const PORT = process.env.PORT;
 //
-app.listen(PORT || 5000, () => console.log('Server start on port ' + PORT))
+const server = app.listen(PORT || 5000, () => console.log("Server start on port " + PORT));
+// Handle Unhandled Promise rejections
+process.on("unhandledRejection", (err) => {
+    console.log(`ERROR: ${err.stack}`);
+    console.log("Shutting down the server due to Unhandled Promise rejection");
+    server.close(() => {
+        process.exit(1);
+    });
+});
+// Handle Uncaught exceptions
+process.on("uncaughtException", (err) => {
+    console.log(`ERROR: ${err.stack}`);
+    console.log("Shutting down due to uncaught exception");
+    process.exit(1);
+});
