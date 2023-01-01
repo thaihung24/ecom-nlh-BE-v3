@@ -4,6 +4,7 @@ const catchAsyncHandler = require('../middleware/async')
 const ErrorResponse = require('../utils/ErrorResponse')
 const cloudinary = require('cloudinary').v2
 class eventController {
+    // @@USER
     // [GET] /api/events
     getListEvent = catchAsyncHandler(async(req, res, next) => {
             const events = await Event.aggregate([{
@@ -66,12 +67,8 @@ class eventController {
                 color,
                 award
             } = JSON.parse(req.body.data)
-            const event = await Event.findOne({
-                "_id": req.params.id,
-                expireIn: {
-                    $gt: Date.now()
-                },
-            })
+            console.log(req.file)
+            const event = await Event.findById(req.params.id)
             if (!event) return next(new ErrorResponse(`Event not found`, 404))
             if (req.file) {
                 const image = cloudinary.uploader.upload(req.file.path, {
@@ -98,20 +95,39 @@ class eventController {
         })
         // [DELETE] /api/events/:id
     deleteEvent = catchAsyncHandler(async(req, res, next) => {
-        const event = await Event.findOne({
-            "_id": req.params.id,
-            expireIn: {
-                $gt: Date.now()
-            },
+            const event = await Event.findOne({
+                "_id": req.params.id,
+                expireIn: {
+                    $gt: Date.now()
+                },
+            })
+            if (!event) return next(new ErrorResponse("Event not found or Expired", 404))
+            event.expireIn = new Date(Date.now())
+            await event.save({
+                validateBeforeSave: true,
+            })
+            res.status(200).json({
+                success: true,
+                message: "Event deleted successfully",
+            })
         })
-        if (!event) return next(new ErrorResponse("Event not found or Expired", 404))
-        event.expireIn = new Date(Date.now())
-        await event.save({
-            validateBeforeSave: true,
-        })
+        // @@ADMIN
+    getAllEvents = catchAsyncHandler(async(req, res, next) => {
+        const event = await Event.find({}).populate('user', 'name')
+        if (!event) return next(new ErrorResponse("Zero event found", 404))
         res.status(200).json({
             success: true,
-            message: "Event deleted successfully",
+            events: event,
+            message: "Get all event"
+        })
+    })
+    getEventById = catchAsyncHandler(async(req, res, next) => {
+        const event = await Event.findById(req.params.id)
+        if (!event) return next(new ErrorResponse("Event not found", 404))
+        res.status(200).json({
+            success: true,
+            event: event,
+            message: "Get event by id"
         })
     })
 }

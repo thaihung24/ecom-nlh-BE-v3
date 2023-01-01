@@ -14,6 +14,7 @@ const eventController = require('../controllers/eventControllers')
 //[GET,POST] /api/events
 router.route('/').get(eventController.getListEvent).post(verifyToken, admin, upload.single("image"), eventController.postEvent)
     // [PUT,DELETE] /api/events/:id
-router.route('/:id').put(verifyToken, admin, upload.single("image"), eventController.updateEvent).delete(verifyToken, admin, eventController.deleteEvent)
-
+router.route('/:id').put(verifyToken, admin, upload.single("image"), eventController.updateEvent).delete(verifyToken, admin, eventController.deleteEvent).get(verifyToken, admin, eventController.getEventById)
+    // @@ADMIN
+router.route('/admin/get').get(verifyToken, admin, eventController.getAllEvents)
 module.exports = router
