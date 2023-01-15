@@ -90,7 +90,7 @@ class eventController {
             })
             res.status(200).json({
                 success: true,
-                message: "Event updated",
+                message: "Event updated successfully",
                 event
             })
         })
@@ -125,50 +125,11 @@ class eventController {
     getEventById = catchAsyncHandler(async(req, res, next) => {
         const event = await Event.findById(req.params.id)
         if (!event) return next(new ErrorResponse("Event not found", 404))
-            // "productOptions": {
-            //     $elemMatch: {
-            //         "colors": {
-            //             $elemMatch: {
-            //                 _id: {
-            //                     $in: event.products
-            //                 }
-            //             },
-            //         }
-            //     }
 
-        // }
-        const productList = await Promise.all(event.products.map(async(v) => await Product.findById(v._id, {
-            // "productOptions": 1,
-            "productOptions": 1,
-            name: 1,
 
-        })))
-        const arr = productList.map(v => {
-            const options = v.productOptions.map(option => {
-                const colors = option.colors.map(color => ({
-                    _id: color._id,
-                    colorName: color.color,
-                    image: color.images[0].urlImage
-
-                }))
-                return {
-                    colors: colors,
-                    productOptionName: option.productOptionName,
-                    price: option.price,
-                    _id: option._id
-                }
-            })
-            return {
-                _id: v._id,
-                name: v.name,
-                productOptions: options,
-
-            }
-        })
         res.status(200).json({
             success: true,
             event: event,
-            productList: arr,
             message: "Get event by id"
         })
     })

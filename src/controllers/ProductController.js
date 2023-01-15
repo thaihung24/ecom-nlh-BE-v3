@@ -13,6 +13,7 @@ class ProductController {
     index = asyncHandler(async(req, res) => {
         const pageSize = req.query.size || 10
         const page = Number(req.query.page) || 1
+
         const keyword = req.query.keyword ? {
             name: {
                 $regex: req.query.keyword,
@@ -20,13 +21,21 @@ class ProductController {
             },
         } : {}
 
-        const count = await Product.count({...keyword })
-        const products = await Product.find({...keyword })
+        const count = await Product.count({
+            ...keyword
+        })
+        const products = await Product.find({
+                ...keyword
+            })
             .select('name price rating image productOptions numReviews')
             .limit(pageSize)
             .skip(pageSize * (page - 1))
         if (products) {
-            res.json({ products, page, pages: Math.ceil(count / pageSize) })
+            res.json({
+                products,
+                page: req.query.page,
+                pages: Math.ceil(count / pageSize)
+            })
         } else {
             res.status(404)
             throw new Error('Product not found')
@@ -37,7 +46,9 @@ class ProductController {
             const manufacturer = await Manufacturer.findById(product.manufacturer)
             const subCategory = await SubCategory.findById(product.subCategory)
             const category = await Category.findById(subCategory.category)
-            const comments = await Comment.find({ product: product._id })
+            const comments = await Comment.find({
+                product: product._id
+            })
 
             if (product) {
                 const result = {
@@ -77,7 +88,9 @@ class ProductController {
             const product = await Product.find({})
                 .populate({
                     path: 'subCategory',
-                    match: { category: categoryId._id },
+                    match: {
+                        category: categoryId._id
+                    },
                 })
                 .select('name image rating price subCategory productOptions')
             const result = []
@@ -115,7 +128,9 @@ class ProductController {
                 _id: req.params.id,
             })
             if (product) {
-                res.json({ message: 'Product removed' })
+                res.json({
+                    message: 'Product removed'
+                })
             } else {
                 res.status(404)
                 throw new Error('Product not found')
@@ -129,7 +144,9 @@ class ProductController {
                 _id: req.params.id,
             })
             if (product) {
-                res.json({ message: 'restored' })
+                res.json({
+                    message: 'restored'
+                })
             } else {
                 res.status(404)
                 throw new Error('Product not found')
@@ -143,7 +160,9 @@ class ProductController {
                 _id: req.params.id,
             })
             if (product) {
-                res.json({ message: 'Product removed' })
+                res.json({
+                    message: 'Product removed'
+                })
             } else {
                 res.status(404)
                 throw new Error('Product not found')
@@ -189,7 +208,9 @@ class ProductController {
         const product = await Product.create(req.body)
 
         if (product) {
-            res.status(201).json({ success: true })
+            res.status(201).json({
+                success: true
+            })
         } else {
             res.status(404)
             throw new Error('Product not found')
@@ -265,7 +286,10 @@ class ProductController {
     // @route   POST /api/products/:id/reviews
     // @access  Private
     createProductReview = asyncHandler(async(req, res) => {
-        const { rating, comment } = req.body
+        const {
+            rating,
+            comment
+        } = req.body
 
         const product = await Product.findById(req.params.id)
 
@@ -301,7 +325,9 @@ class ProductController {
             product.rating = product.rating / product.reviews.length
 
             await product.save()
-            res.status(201).json({ message: 'Review added' })
+            res.status(201).json({
+                message: 'Review added'
+            })
         } else {
             res.status(404)
             throw new Error('Product not found')
@@ -393,7 +419,11 @@ class ProductController {
             .limit(pageSize)
             .skip(pageSize * (page - 1))
         if (products) {
-            res.json({ products, page, pages: Math.ceil(count / pageSize) })
+            res.json({
+                products,
+                page,
+                pages: Math.ceil(count / pageSize)
+            })
         } else {
             res.status(404)
             throw new Error('Product not found')
