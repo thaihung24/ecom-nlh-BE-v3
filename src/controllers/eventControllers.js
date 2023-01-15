@@ -18,6 +18,8 @@ class eventController {
                     expireIn: 1,
                 }
             }])
+
+
             res.status(200).json({
                 success: true,
                 message: "Available events",
@@ -63,27 +65,26 @@ class eventController {
             const {
                 name,
                 products,
-                addAvailableDays,
+                availableDays,
                 color,
                 award
             } = JSON.parse(req.body.data)
-            console.log(req.file)
             const event = await Event.findById(req.params.id)
             if (!event) return next(new ErrorResponse(`Event not found`, 404))
             if (req.file) {
-                const image = cloudinary.uploader.upload(req.file.path, {
+                const image = await cloudinary.uploader.upload(req.file.path, {
                     public_id: event.banner.public_id,
                 })
                 event.banner.url = image.secure_url || event.banner.url
             }
-            const addDays = addAvailableDays * 24 * 60 * 60 * 1000
+            const addDays = availableDays * 24 * 60 * 60 * 1000
             if (!event) return next(new ErrorResponse("Event not found or Expired", 404))
             event.products = products || event.products
             event.name = name || event.name
             event.color = color || event.color
             event.award = award || event.award
 
-            event.expireIn += (addDays || 0)
+            event.expireIn = Date.now() + (addDays || 0)
             await event.save({
                 validateBeforeSave: false
             })
@@ -124,9 +125,50 @@ class eventController {
     getEventById = catchAsyncHandler(async(req, res, next) => {
         const event = await Event.findById(req.params.id)
         if (!event) return next(new ErrorResponse("Event not found", 404))
+            // "productOptions": {
+            //     $elemMatch: {
+            //         "colors": {
+            //             $elemMatch: {
+            //                 _id: {
+            //                     $in: event.products
+            //                 }
+            //             },
+            //         }
+            //     }
+
+        // }
+        const productList = await Promise.all(event.products.map(async(v) => await Product.findById(v._id, {
+            // "productOptions": 1,
+            "productOptions": 1,
+            name: 1,
+
+        })))
+        const arr = productList.map(v => {
+            const options = v.productOptions.map(option => {
+                const colors = option.colors.map(color => ({
+                    _id: color._id,
+                    colorName: color.color,
+                    image: color.images[0].urlImage
+
+                }))
+                return {
+                    colors: colors,
+                    productOptionName: option.productOptionName,
+                    price: option.price,
+                    _id: option._id
+                }
+            })
+            return {
+                _id: v._id,
+                name: v.name,
+                productOptions: options,
+
+            }
+        })
         res.status(200).json({
             success: true,
             event: event,
+            productList: arr,
             message: "Get event by id"
         })
     })

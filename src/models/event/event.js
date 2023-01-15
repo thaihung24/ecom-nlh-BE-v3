@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 
-const eventSchema = mongoose.Schema({
+const eventSchema = new mongoose.Schema({
         user: {
             type: mongoose.Schema.Types.ObjectId,
             required: true,
@@ -26,6 +26,5 @@ const eventSchema = mongoose.Schema({
         timestamps: true
     })
     // Plugin
-
 const Event = mongoose.model('Event', eventSchema)
 module.exports = Event
