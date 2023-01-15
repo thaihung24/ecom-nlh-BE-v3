@@ -57,7 +57,7 @@ app.use(passport.session())
 //cors
 const cors = require('cors')
 const corsOptions = {
-    origin: ["http://localhost:3000", "https://e-com-nlh-fe.vercel.app", "http://192.168.1.3:3000", "http://192.168.1.8:3000"],
+    origin: ["http://localhost:3000", "https://tlcn-admin-hln.vercel.app", "https://e-com-nlh-fe.vercel.app", "http://192.168.1.3:3000", "http://192.168.1.8:3000"],
     credentials: true, //access-control-allow-credentials:true
     optionSuccessStatus: 200,
 };
