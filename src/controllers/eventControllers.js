@@ -60,6 +60,7 @@ class eventController {
                 event
             })
         })
+        // @@UPDATE
         // [PUT] /api/events/:id
     updateEvent = catchAsyncHandler(async(req, res, next) => {
             const {
@@ -94,7 +95,9 @@ class eventController {
                 event
             })
         })
-        // [DELETE] /api/events/:id
+        // @@ DELETE
+        // SOFT DELETE EVENT BY ID
+        // [SOFT-DELETE] /api/events/:id 
     deleteEvent = catchAsyncHandler(async(req, res, next) => {
             const event = await Event.findOne({
                 "_id": req.params.id,
@@ -110,6 +113,21 @@ class eventController {
             res.status(200).json({
                 success: true,
                 message: "Event deleted successfully",
+            })
+        })
+        // [HARD-DELETE] /api/events/expiredEvent
+    removeEvent = catchAsyncHandler(async(req, res, next) => {
+            const eventsCount = await Event.deleteMany({
+                "expireIn": {
+                    $lte: Date.now()
+                }
+            })
+            if (!eventsCount.deletedCount) return next(new ErrorResponse("Zero expired events found", 404))
+
+            res.status(200).json({
+                success: true,
+                numberOfDelete: eventsCount.deletedCount,
+                message: "Cleared expired events successfully",
             })
         })
         // @@ADMIN
@@ -133,5 +151,6 @@ class eventController {
             message: "Get event by id"
         })
     })
+
 }
 module.exports = new eventController()
