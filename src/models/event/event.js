@@ -25,6 +25,13 @@ const eventSchema = new mongoose.Schema({
     }, {
         timestamps: true
     })
+    // Setup
+eventSchema.index({
+        "expireIn": 1,
+    }, {
+        expireAfterSeconds: 60 * 60 * 24 * 7,
+    })
     // Plugin
+
 const Event = mongoose.model('Event', eventSchema)
 module.exports = Event

@@ -112,8 +112,18 @@ class eventController {
             })
             res.status(200).json({
                 success: true,
-                message: "Event deleted successfully",
+                message: "Event deleted successfully with nothing change this will be removed from database after 7days, permanently",
             })
+        })
+        // [PUT] /api/events/:id
+    enableEvent = catchAsyncHandler(async(req, res, next) => {
+            const event = await Event.findOne({
+                "_id": req.params.id,
+                "expireIn": {
+                    $lte: Date.now()
+                }
+            })
+            if (!event) return next(new ErrorResponse("Valid event not found", 404))
         })
         // [HARD-DELETE] /api/events/expiredEvent
     removeEvent = catchAsyncHandler(async(req, res, next) => {
