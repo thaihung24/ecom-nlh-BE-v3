@@ -143,6 +143,7 @@ class eventController {
         // @@ADMIN
     getAllEvents = catchAsyncHandler(async(req, res, next) => {
         const event = await Event.find({}).populate('user', 'name')
+            // const {type,}
         if (!event) return next(new ErrorResponse("Zero event found", 404))
         res.status(200).json({
             success: true,
