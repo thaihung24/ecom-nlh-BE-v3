@@ -112,7 +112,7 @@ class eventController {
             })
             res.status(200).json({
                 success: true,
-                message: "Event deleted successfully with nothing change this will be removed from database after 7days, permanently",
+                message: "Event disable successfully with nothing change this will be removed from database after 7days, permanently",
             })
         })
         // [PUT] /api/events/:id
@@ -148,7 +148,7 @@ class eventController {
         res.status(200).json({
             success: true,
             events: event,
-            message: "Get all event"
+            message: "Get all events successfully"
         })
     })
     getEventById = catchAsyncHandler(async(req, res, next) => {
@@ -159,7 +159,7 @@ class eventController {
         res.status(200).json({
             success: true,
             event: event,
-            message: "Get event by id"
+            message: "Get event by id successfully"
         })
     })
 
