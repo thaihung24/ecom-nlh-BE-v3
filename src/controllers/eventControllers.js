@@ -137,7 +137,7 @@ class eventController {
             res.status(200).json({
                 success: true,
                 numberOfDelete: eventsCount.deletedCount,
-                message: "Cleared expired events successfully",
+                message: `Cleared ${eventsCount.deletedCount} expired events successfully`,
             })
         })
         // @@ADMIN
