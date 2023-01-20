@@ -60,6 +60,7 @@ class eventController {
                 event
             })
         })
+        // @@UPDATE
         // [PUT] /api/events/:id
     updateEvent = catchAsyncHandler(async(req, res, next) => {
             const {
@@ -94,7 +95,9 @@ class eventController {
                 event
             })
         })
-        // [DELETE] /api/events/:id
+        // @@ DELETE
+        // SOFT DELETE EVENT BY ID
+        // [SOFT-DELETE] /api/events/:id 
     deleteEvent = catchAsyncHandler(async(req, res, next) => {
             const event = await Event.findOne({
                 "_id": req.params.id,
@@ -109,17 +112,43 @@ class eventController {
             })
             res.status(200).json({
                 success: true,
-                message: "Event deleted successfully",
+                message: "Event disable successfully with nothing change this will be removed from database after 7days, permanently",
+            })
+        })
+        // [PUT] /api/events/:id
+    enableEvent = catchAsyncHandler(async(req, res, next) => {
+            const event = await Event.findOne({
+                "_id": req.params.id,
+                "expireIn": {
+                    $lte: Date.now()
+                }
+            })
+            if (!event) return next(new ErrorResponse("Valid event not found", 404))
+        })
+        // [HARD-DELETE] /api/events/expiredEvent
+    removeEvent = catchAsyncHandler(async(req, res, next) => {
+            const eventsCount = await Event.deleteMany({
+                "expireIn": {
+                    $lte: Date.now()
+                }
+            })
+            if (!eventsCount.deletedCount) return next(new ErrorResponse("Zero expired events found", 404))
+
+            res.status(200).json({
+                success: true,
+                numberOfDelete: eventsCount.deletedCount,
+                message: "Cleared expired events successfully",
             })
         })
         // @@ADMIN
     getAllEvents = catchAsyncHandler(async(req, res, next) => {
         const event = await Event.find({}).populate('user', 'name')
+            // const {type,}
         if (!event) return next(new ErrorResponse("Zero event found", 404))
         res.status(200).json({
             success: true,
             events: event,
-            message: "Get all event"
+            message: "Get all events successfully"
         })
     })
     getEventById = catchAsyncHandler(async(req, res, next) => {
@@ -130,8 +159,9 @@ class eventController {
         res.status(200).json({
             success: true,
             event: event,
-            message: "Get event by id"
+            message: "Get event by id successfully"
         })
     })
+
 }
 module.exports = new eventController()
