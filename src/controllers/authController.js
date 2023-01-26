@@ -7,7 +7,6 @@ const User = require('../models/user/User')
 const Address = require("../models/user/Address")
     //
 const sendEmail = require('../utils/sendEmail')
-const generateToken = require('../utils/generateToken.js')
 class authController {
     // [POST] /login
     login = catchAsyncHandler(async(req, res, next) => {
@@ -97,6 +96,23 @@ class authController {
                 return next(new ErrorResponse(e.message, 500))
             }
         })
+        // [POST] /refreshToken
+    verifyRefreshToken = catchAsyncHandler(async(req, res, next) => {
+            const {
+                refreshToken
+            } = req.body
+            if (!refreshToken) return next(new ErrorResponse("Missing refresh token", 404))
+            const hashToken = crypto.createHash('sha256').update(refreshToken).digest('hex')
+            console.log("HASH" + hashToken)
+            const user = await User.findOne({
+                refreshToken: hashToken,
+                refreshTokenExpires: {
+                    $gt: Date.now()
+                }
+            })
+            if (!user) return next(new ErrorResponse("Invalid refresh token or expired, Login again", 404))
+            sendToken(user, 200, res)
+        })
         // [POST] /verify-email/:token
     verifyEmail = catchAsyncHandler(async(req, res, next) => {
             const {
@@ -111,7 +127,6 @@ class authController {
                     $gt: Date.now(),
                 },
             })
-            console.log(user)
 
             if (!user) {
                 return next(
@@ -139,7 +154,6 @@ class authController {
         })
         //[POST] /password/forgot
     forgotPassword = catchAsyncHandler(async(req, res, next) => {
-            console.log(req.body)
             const user = await User.findOne({
                 email: req.body.email
             });
