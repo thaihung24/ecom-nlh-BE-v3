@@ -10,7 +10,10 @@ class voucherControllers {
         const key = keyword ? {
             key: keyword,
         } : {}
-        const vouchers = await Voucher.find(key)
+        const vouchers = await Voucher.find({
+            ...key,
+            private: req.query.private
+        })
         if (vouchers) {
             res.status(200).json({
                 success: true,

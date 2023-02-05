@@ -130,9 +130,10 @@ UserSchema.pre('save', async function(next) {
 
 // Compare user password
 UserSchema.methods.comparePassword = async function(enteredPassword) {
-        return await bcrypt.compare(enteredPassword, this.password)
-    }
-    // Generate code to verify email
+    return await bcrypt.compare(enteredPassword, this.password)
+}
+
+// Generate code to verify email
 UserSchema.methods.verifyEmailToken = function() {
     // Generate token
     const verifyToken = crypto.randomBytes(20).toString('hex')
@@ -144,9 +145,6 @@ UserSchema.methods.verifyEmailToken = function() {
         .digest('hex')
         //expires
     this.emailCodeExpires = Date.now() + 60 * 1000 * 30
-    console.log(Date.now() + 60 * 1000 * 30)
-    console.log(Date.now())
-
     return verifyToken
 }
 

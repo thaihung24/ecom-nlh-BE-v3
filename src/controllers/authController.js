@@ -26,7 +26,7 @@ class authController {
                 // Checks if password is correct or not
             const isPasswordMatched = await user.comparePassword(password)
             if (!isPasswordMatched) {
-                return next(new ErrorResponse(`Invalid Email or Password`, 401))
+                return next(new ErrorResponse(`Invalid Email or Password`, 404))
             }
 
             sendToken(user, 200, res)
