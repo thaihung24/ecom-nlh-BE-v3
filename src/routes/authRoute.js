@@ -16,7 +16,8 @@ const passport = require("passport");
 router.route("/me").get(verifyToken, userController.getUserProfile);
 //[POST] /api/auth/login
 router.route("/login").post(authController.login);
-
+//[POST] /api/auth/re
+router.route("/refreshToken").post(authController.verifyRefreshToken);
 //[POST] /api/auth/login
 router.route("/register").post(authController.register);
 
@@ -31,7 +32,7 @@ router.route('/password/forgot').post(authController.forgotPassword)
 router.route('/password/resetpassword/:token').put(authController.resetPassword)
 
 // [PUT] /api/auth/password/change
-router.route('/password/change').put(authController.changePassword)
+router.route('/password/change').put(verifyToken, authController.changePassword)
 
 // @@ADMIN 
 

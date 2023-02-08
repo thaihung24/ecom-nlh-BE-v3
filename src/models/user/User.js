@@ -82,35 +82,36 @@ const UserSchema = new mongoose.Schema({
         default: Date.now,
         require: true,
     },
+    refreshToken: String,
+    refreshTokenExpires: Date,
 }, {
     timestamps: true,
 
-  }
-)
-UserSchema.plugin(mongooseDelete, {
-  overrideMethods: 'all',
-  deleteAt: true,
 })
-UserSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password)
+UserSchema.plugin(mongooseDelete, {
+    overrideMethods: 'all',
+    deleteAt: true,
+})
+UserSchema.methods.matchPassword = async function(enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password)
 
 }
 
 // Slugify
 UserSchema.pre('save', function(next) {
-    let fullNameRaw = this.firstName ?
-        `${this.firstName} ${this.lastName}` :
-        this.name
-    this.fullName = slugify(fullNameRaw, {
-        replacement: '-',
-        trim: true,
-        lower: true,
+        let fullNameRaw = this.firstName ?
+            `${this.firstName} ${this.lastName}` :
+            this.name
+        this.fullName = slugify(fullNameRaw, {
+            replacement: '-',
+            trim: true,
+            lower: true,
+        })
+
+        next()
     })
-
-    next()
-})
-
-// generate access token
+    // @@Generate token
+    // generate access token
 UserSchema.methods.getJwtToken = function() {
         return jwt.sign({
                 id: this._id,
@@ -119,6 +120,20 @@ UserSchema.methods.getJwtToken = function() {
                 expiresIn: process.env.JWT_EXPIRES_TIME,
             }
         )
+    }
+    // Generate refreshToken
+UserSchema.methods.getRefreshToken = function() {
+        // random
+        const refreshTokenHot = crypto.randomBytes(20).toString('hex')
+            // hash and set
+        this.refreshToken = crypto
+            .createHash('sha256')
+            .update(refreshTokenHot)
+            .digest('hex')
+            //expires by day
+        this.refreshTokenExpires = Date.now() + 60 * 1000 * 60 * 24 * process.env.REFRESH_TOKEN_EXPIRES_TIME
+            //expires
+        return refreshTokenHot
     }
     // Encrypting password before saving user
 UserSchema.pre('save', async function(next) {
@@ -145,8 +160,7 @@ UserSchema.methods.verifyEmailToken = function() {
         .digest('hex')
         //expires
     this.emailCodeExpires = Date.now() + 60 * 1000 * 30
-    console.log(Date.now() + 60 * 1000 * 30)
-    console.log(Date.now())
+
 
     return verifyToken
 }

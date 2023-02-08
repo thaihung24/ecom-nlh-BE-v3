@@ -1,9 +1,15 @@
 // Create and send token and save in the cookie.
+const catchAsyncHandler = require("../middleware/async")
 
-const sendToken = (user, statusCode, res) => {
+
+const sendToken = catchAsyncHandler(async(user, statusCode, res) => {
 
     // Create Jwt token
     const accessToken = user.getJwtToken()
+    const refreshToken = user.getRefreshToken()
+    await user.save({
+            validateBeforeSave: false,
+        })
         // Options for cookie
     const options = {
         expires: new Date(
@@ -11,7 +17,9 @@ const sendToken = (user, statusCode, res) => {
         ),
         httpOnly: true,
     }
-    const { message } = user
+    const {
+        message
+    } = user
     delete user.message
     res
         .status(statusCode)
@@ -21,9 +29,10 @@ const sendToken = (user, statusCode, res) => {
             message: message || 'Authenticated',
             data: {
                 access_token: accessToken,
+                refresh_token: refreshToken,
                 user,
             },
         })
-}
+})
 
 module.exports = sendToken
