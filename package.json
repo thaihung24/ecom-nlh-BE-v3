@@ -19,6 +19,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@sendgrid/mail": "^7.7.0",
         "and": "^0.0.3",
         "argon2": "^0.29.1",
         "bcrypt": "^5.1.0",
