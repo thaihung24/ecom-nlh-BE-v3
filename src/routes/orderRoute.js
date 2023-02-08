@@ -1,27 +1,25 @@
 const express = require('express')
 const router = express.Router()
 const orderControllers = require('../controllers/orderController')
-const { admin } = require('../middleware/authMiddleware')
+const { protect, admin } = require('../middleware/authMiddleware')
 const verifyToken = require('../middleware/auth')
 
 router
-    .route('/topOrders')
-    .get(verifyToken, admin, orderControllers.getTopUserOrder)
+  .route('/topOrders')
+  .get(verifyToken, admin, orderControllers.getTopUserOrder)
 router.route('/myorders').get(verifyToken, orderControllers.getMyOrders)
 router.route('/:id/pay').put(verifyToken, orderControllers.updateOrderToPaid)
+router.route('/confirm/:id').put(protect, admin, orderControllers.confirmOrder)
 router
-    .route('/confirm/:id')
-    .put(verifyToken, admin, orderControllers.confirmOrder)
-router
-    .route('/:id')
-    .get(verifyToken, orderControllers.getOrderById)
-    .put(verifyToken, orderControllers.updateStatusOrder)
+  .route('/:id')
+  .get(verifyToken, orderControllers.getOrderById)
+  .put(verifyToken, orderControllers.updateStatusOrder)
 
 router.route('/:id/update').put(verifyToken, orderControllers.updateOrderById)
 
 router
-    .route('/')
-    .post(verifyToken, orderControllers.addOrderItems)
-    .get(verifyToken, admin, orderControllers.getAllOrders)
+  .route('/')
+  .post(verifyToken, orderControllers.addOrderItems)
+  .get(verifyToken, admin, orderControllers.getAllOrders)
 
 module.exports = router
