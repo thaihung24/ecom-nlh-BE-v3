@@ -20,4 +20,11 @@ router.route("/admin").get((req, res) => {
     });
 });
 
+//[GET] /api/auth/admin/users
+router.route("/test").get((req, res) => {
+    res.json({
+        message: "Test route cart",
+    });
+});
+
 module.exports = router;
