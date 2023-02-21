@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const productController = require('../controllers/ProductController')
 const verifyToken = require('../middleware/auth')
-const { admin } = require('../middleware/authMiddleware.js')
+const { protect, admin } = require('../middleware/authMiddleware.js')
 
 router
   .route('/trash')
@@ -22,14 +22,14 @@ router
   .put(verifyToken, admin, productController.updateProduct)
 router
   .route('/:id/restore')
-  .patch(verifyToken, admin, productController.restoreProduct)
+  .patch(protect, admin, productController.restoreProduct)
 
 router
   .route('/:id/force')
-  .delete(verifyToken, admin, productController.forceProduct)
+  .delete(protect, admin, productController.forceProduct)
 router
   .route('/:id/reviews')
   .post(verifyToken, productController.createProductReview)
   .delete(verifyToken, admin, productController.deleteProductReview)
-
+router.route('/compare').post(productController.compareProducts)
 module.exports = router
