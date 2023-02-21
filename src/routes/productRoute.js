@@ -31,5 +31,5 @@ router
   .route('/:id/reviews')
   .post(verifyToken, productController.createProductReview)
   .delete(verifyToken, admin, productController.deleteProductReview)
-
+router.route('/compare').post(productController.compareProducts)
 module.exports = router
