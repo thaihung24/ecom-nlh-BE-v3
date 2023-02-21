@@ -1,6 +1,6 @@
 // Error
 const ErrorResponse = require('../utils/ErrorResponse')
-    //Main route
+//Main route
 const authRoute = require('./authRoute')
 const productRoute = require('./productRoute')
 const userRoute = require('./userRoute')
@@ -30,7 +30,7 @@ function route(app) {
   // Auth
   app.use('/api/auth', authRoute)
   // Auth - oauth2
-   app.use('/api/oauth2', oauth2Route)
+  app.use('/api/oauth2', oauth2Route)
   //product
   app.use('/api/products', productRoute)
   //cart
@@ -48,7 +48,6 @@ function route(app) {
   app.use('/', (req, res, next) => {
     next(new ErrorResponse(`Page not found`, 404, null, 'Not found'))
   })
-
 }
 
 module.exports = route
