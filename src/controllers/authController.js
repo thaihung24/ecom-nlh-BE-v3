@@ -4,17 +4,13 @@ const catchAsyncHandler = require('../middleware/async')
 const ErrorResponse = require('../utils/ErrorResponse')
 const sendToken = require('../utils/jwtToken')
 const User = require('../models/user/User')
-const Address = require("../models/user/Address")
+const Address = require('../models/user/Address')
     //
 const sendEmail = require('../utils/sendEmail')
-const generateToken = require('../utils/generateToken.js')
 class authController {
     // [POST] /login
     login = catchAsyncHandler(async(req, res, next) => {
-            const {
-                email,
-                password
-            } = req.body
+            const { email, password } = req.body
                 // check empty
             if (!email || !password) {
                 return next(new ErrorResponse(`Missing email or password`, 400))
@@ -26,21 +22,14 @@ class authController {
                 // Checks if password is correct or not
             const isPasswordMatched = await user.comparePassword(password)
             if (!isPasswordMatched) {
-                return next(new ErrorResponse(`Invalid Email or Password`, 404))
+                return next(new ErrorResponse(`Invalid Email or Password`, 401))
             }
 
             sendToken(user, 200, res)
         })
         //[POST] /register
     register = catchAsyncHandler(async(req, res, next) => {
-            const {
-                email,
-                password,
-                gender,
-                addressForm,
-                phone,
-                name
-            } = req.body
+            const { email, password, gender, addressForm, phone, name } = req.body
             if (!email | !password) {
                 return next(new ErrorResponse(`Missing email or password`, 400))
             }
@@ -97,11 +86,31 @@ class authController {
                 return next(new ErrorResponse(e.message, 500))
             }
         })
+        // [POST] /refreshToken
+    verifyRefreshToken = catchAsyncHandler(async(req, res, next) => {
+            const { refreshToken } = req.body
+            if (!refreshToken)
+                return next(new ErrorResponse('Missing refresh token', 404))
+            const hashToken = crypto
+                .createHash('sha256')
+                .update(refreshToken)
+                .digest('hex')
+            console.log('HASH' + hashToken)
+            const user = await User.findOne({
+                refreshToken: hashToken,
+                refreshTokenExpires: {
+                    $gt: Date.now(),
+                },
+            })
+            if (!user)
+                return next(
+                    new ErrorResponse('Invalid refresh token or expired, Login again', 404)
+                )
+            sendToken(user, 200, res)
+        })
         // [POST] /verify-email/:token
     verifyEmail = catchAsyncHandler(async(req, res, next) => {
-            const {
-                token
-            } = req.params
+            const { token } = req.params
 
             // Hash URL token
             const verifyToken = crypto.createHash('sha256').update(token).digest('hex')
@@ -111,7 +120,6 @@ class authController {
                     $gt: Date.now(),
                 },
             })
-            console.log(user)
 
             if (!user) {
                 return next(
@@ -130,101 +138,103 @@ class authController {
     logOut = catchAsyncHandler(async(req, res, next) => {
             res.cookie(`accessToken`, null, {
                 expires: new Date(Date.now()),
-                httpOnly: true
+                httpOnly: true,
             })
             res.status(200).json({
                 success: true,
-                message: "Logout successfully"
+                message: 'Logout successfully',
             })
         })
         //[POST] /password/forgot
     forgotPassword = catchAsyncHandler(async(req, res, next) => {
-            console.log(req.body)
             const user = await User.findOne({
-                email: req.body.email
-            });
-            if (!user) return next(new ErrorResponse('User not found, email haven\'t register yet ', 404))
+                email: req.body.email,
+            })
+            if (!user)
+                return next(
+                    new ErrorResponse("User not found, email haven't register yet ", 404)
+                )
 
             const resetPasswordToken = user.verifyEmailToken()
 
             await user.save({
-                validateBeforeSave: false
+                validateBeforeSave: false,
             })
 
-
-            // Mail sending 
+            // Mail sending
             // Create reset password url
-            const resetUrl = `${resetPasswordToken}`;
+            const resetUrl = `${resetPasswordToken}`
 
             const message = `Your verify token for reset ${user.name}'s password is :\n\n${resetUrl}\n\nCode will be expired after 30 minutes\n\nIf you have not requested this email, then ignore it.`
             try {
-
                 await sendEmail({
                     email: user.email,
                     subject: 'NLH-ecom Password Recovery',
-                    message
+                    message,
                 })
 
                 res.status(200).json({
                     success: true,
-                    message: `Email sent to: ${user.email}`
+                    message: `Email sent to: ${user.email}`,
                 })
-
             } catch (e) {
-                user.resetPasswordToken = undefined;
-                user.resetPasswordExpire = undefined;
+                user.resetPasswordToken = undefined
+                user.resetPasswordExpire = undefined
 
                 await user.save({
-                    validateBeforeSave: false
-                });
+                    validateBeforeSave: false,
+                })
 
                 return next(new ErrorResponse(e.message, 500))
             }
         })
         //[PUT]  /password/resetpassword/:token
     resetPassword = catchAsyncHandler(async(req, res, next) => {
-            if (!req.body.password) return next(new ErrorResponse("Missing password"))
-            const token = crypto.createHash('sha256').update(req.params.token).digest('hex');
+            if (!req.body.password) return next(new ErrorResponse('Missing password'))
+            const token = crypto
+                .createHash('sha256')
+                .update(req.params.token)
+                .digest('hex')
             const user = await User.findOne({
                 emailCodeToken: token,
                 emailCodeExpires: {
                     $gt: Date.now(),
-                }
+                },
             })
-            if (!user) return next(new ErrorResponse("Invalid token or expired token, try again", 404))
+            if (!user)
+                return next(
+                    new ErrorResponse('Invalid token or expired token, try again', 404)
+                )
             user.password = req.body.password
             user.emailCodeExpires = undefined
             user.emailCodeToken = undefined
             await user.save({
-                validateBeforeSave: false
+                validateBeforeSave: false,
             })
             res.status(200).json({
                 success: true,
-                message: "Password reset successfully",
+                message: 'Password reset successfully',
             })
         })
         //[PUT] /password/change
     changePassword = catchAsyncHandler(async(req, res, next) => {
-
-        const user = await User.findById(req.user._id).select("+password")
-        if (!user) return next(new ErrorResponse("User not found", 404))
-        const {
-            enteredPassword,
-            newPassword
-        } = req.body
-        if (!enteredPassword || !newPassword) return next(new ErrorResponse("Missing password", 400))
+        const user = await User.findById(req.user._id).select('+password')
+        if (!user) return next(new ErrorResponse('User not found', 404))
+        const { enteredPassword, newPassword } = req.body
+        if (!enteredPassword || !newPassword)
+            return next(new ErrorResponse('Missing password', 400))
         const checkPassword = await user.comparePassword(enteredPassword)
-        if (!checkPassword) return next(new ErrorResponse("Password incorrect", 400))
+        if (!checkPassword)
+            return next(new ErrorResponse('Password incorrect', 400))
         user.password = newPassword
         await user.save({
-            validateBeforeSave: false
+            validateBeforeSave: false,
         })
         res.status(200).json({
             success: true,
-            message: "Update user password successfully"
+            message: 'Update user password successfully',
         })
     })
-
 }
 
 module.exports = new authController()

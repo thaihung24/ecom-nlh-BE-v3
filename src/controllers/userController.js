@@ -88,6 +88,7 @@ class userControllers {
       user: updateUser,
     })
   })
+
   // @desc UPDATE User avatar picture
   //@route PUT api/users/avatar
   //@access Private
@@ -174,7 +175,7 @@ class userControllers {
       })
     } else {
       res.status(401)
-      throw new Error('User not found')
+      return next(new ErrorResponse('User not found', 404))
     }
   })
   //@desc GET all user profile
@@ -195,45 +196,7 @@ class userControllers {
       })
     } else {
       res.status(404)
-      throw new Error('Product not found')
-    }
-  })
-  //@desc UPDATE user profile
-  //@route PUT / api/users/:id
-  //@access Private
-  updateUser = catchAsyncHandler(async (req, res) => {
-    const user = await User.findById(req.params.id)
-    if (user) {
-      user.name = req.body.name || user.name
-      user.email = req.body.email || user.email
-      user.isAdmin = req.body.isAdmin || user.isAdmin
-      const updateUser = await user.save()
-      res.json({
-        _id: updateUser._id,
-        name: updateUser.name,
-        email: updateUser.email,
-        isAdmin: updateUser.isAdmin,
-      })
-    } else {
-      res.status(401)
-      throw new Error('User not found')
-    }
-  })
-  //@desc GET all user profile
-  //@route GET / api/users
-  //@access Private
-  getUsers = catchAsyncHandler(async (req, res) => {
-    const pageSize = 10
-    const page = Number(req.query.page) || 1
-    const count = await User.count({})
-    const users = await User.find({})
-      .limit(pageSize)
-      .skip(pageSize * (page - 1))
-    if (users) {
-      res.json({ users, page, pages: Math.ceil(count / pageSize) })
-    } else {
-      res.status(404)
-      throw new Error('Product not found')
+      return next(new ErrorResponse('Product not found', 404))
     }
   })
 
@@ -250,7 +213,7 @@ class userControllers {
       })
     } else {
       res.status(404)
-      throw new Error('User not found')
+      return next(new ErrorResponse('User not found', 404))
     }
   })
   // @desc    restore a User
@@ -266,7 +229,7 @@ class userControllers {
       })
     } else {
       res.status(404)
-      throw new Error('Product not found')
+      return next(new ErrorResponse('Product not found', 404))
     }
   })
   // @desc    force a user
@@ -282,7 +245,7 @@ class userControllers {
       })
     } else {
       res.status(404)
-      throw new Error('Product not found')
+      return next(new ErrorResponse('Product not found', 404))
     }
   })
   getTrashUsers = catchAsyncHandler(async (req, res, next) => {
@@ -301,7 +264,7 @@ class userControllers {
       })
     } else {
       res.status(404)
-      throw new Error('Product not found')
+      return next(new ErrorResponse('Product not found', 404))
     }
   })
   //@desc GET  user
@@ -313,7 +276,7 @@ class userControllers {
       res.json(users)
     } else {
       res.status(404)
-      throw new Error('User not found')
+      return next(new ErrorResponse('User not found', 404))
     }
   })
   //@desc UPDATE user profile
@@ -334,7 +297,7 @@ class userControllers {
       })
     } else {
       res.status(401)
-      throw new Error('User not found')
+      return next(new ErrorResponse('User not found', 404))
     }
   })
 }
