@@ -11,7 +11,7 @@
         "data:import": "node src/seeder/seeder ",
         "build": "tsc",
         "data:destroy": "node src/seeder/seeder -d ",
-        "start": "node index.js",
+        "start": "nodemon index.js",
         "dev": "SET NODE_ENV=DEVELOPMENT& nodemon index.js",
         "prod": "SET NODE_ENV=PRODUCTION& nodemon index.js",
         "swagger-autogen": "node src/seeder/swagger.js"
@@ -49,6 +49,7 @@
         "passport-facebook": "^3.0.0",
         "passport-google-oauth20": "^2.0.0",
         "slugify": "^1.6.5",
+        "socket.io": "^4.6.1",
         "swagger-autogen": "^2.22.0",
         "swagger-jsdoc": "^6.2.5",
         "swagger-ui-express": "^4.6.0"

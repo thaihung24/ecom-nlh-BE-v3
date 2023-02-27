@@ -22,11 +22,11 @@ router
   .put(verifyToken, admin, productController.updateProduct)
 router
   .route('/:id/restore')
-  .patch(protect, admin, productController.restoreProduct)
+  .patch(verifyToken, admin, productController.restoreProduct)
 
 router
   .route('/:id/force')
-  .delete(protect, admin, productController.forceProduct)
+  .delete(verifyToken, admin, productController.forceProduct)
 router
   .route('/:id/reviews')
   .post(verifyToken, productController.createProductReview)
