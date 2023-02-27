@@ -99,16 +99,19 @@ class cartControllers {
         //update if quantity > 0
         cart.item.quantity = quantity
         await cart.save()
+        const result = await Item.find({ user: req.user._id })
         res.status(200).json({
           success: true,
-          cart: cart,
+          cart: result,
           message: 'Update successfully',
         })
       } else if (quantity === 0) {
         //delete if quantity =0
         await cart.delete()
+        const result = await Item.find({ user: req.user._id })
         res.status(200).json({
           success: true,
+          cart: result,
           message: 'Delete successfully',
         })
       }
