@@ -14,6 +14,8 @@ const oauth2Route = require('./oauth2Route')
 const categoryRoute = require('./categoryRoute')
 const subCategoryRoute = require('./subCategoryRoute')
 const manufacturerRoute = require('./manufacturerRoute')
+const chatRoutes = require('./chatRoutes')
+const messageRoutes = require('./messageRoutes')
 // const swaggerUI = require('swagger-ui-express')
 // const swaggerJsDoc = require('swagger-jsdoc')
 //
@@ -44,6 +46,8 @@ function route(app) {
   app.use('/api/categories', categoryRoute)
   app.use('/api/subcategories', subCategoryRoute)
   app.use('/api/manufacturers', manufacturerRoute)
+  app.use('/api/chats', chatRoutes)
+  app.use('/api/messages', messageRoutes)
   // main
   app.use('/', (req, res, next) => {
     next(new ErrorResponse(`Page not found`, 404, null, 'Not found'))

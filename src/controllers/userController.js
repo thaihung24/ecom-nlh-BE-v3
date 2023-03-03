@@ -182,24 +182,38 @@ class userControllers {
   //@route GET / api/users
   //@access Private
   getUsers = catchAsyncHandler(async (req, res) => {
-    const pageSize = 10
-    const page = Number(req.query.page) || 1
-    const count = await User.count({})
-    const users = await User.find({})
-      .limit(pageSize)
-      .skip(pageSize * (page - 1))
-    if (users) {
-      res.json({
-        users,
-        page,
-        pages: Math.ceil(count / pageSize),
+    const keyword = req.query.search
+      ? {
+          $or: [
+            { name: { $regex: req.query.search, $options: 'i' } },
+            { email: { $regex: req.query.search, $options: 'i' } },
+          ],
+        }
+      : {}
+    if (keyword) {
+      const users = await User.find(keyword).find({
+        _id: { $ne: req.user._id },
       })
+      res.status(200).json(users)
     } else {
-      res.status(404)
-      return next(new ErrorResponse('Product not found', 404))
+      const pageSize = 10
+      const page = Number(req.query.page) || 1
+      const count = await User.count({})
+      const users = await User.find({})
+        .limit(pageSize)
+        .skip(pageSize * (page - 1))
+      if (users) {
+        res.json({
+          users,
+          page,
+          pages: Math.ceil(count / pageSize),
+        })
+      } else {
+        res.status(404)
+        return next(new ErrorResponse('Product not found', 404))
+      }
     }
   })
-
   //@desc Delete  user profile
   //@route GET / api/users
   //@access Private
