@@ -52,6 +52,7 @@ const corsOptions = {
   origin: [
     'http://localhost:3000',
     'https://tlcn-admin-hln.vercel.app',
+    'https://ecom-nlh-v3.vercel.app',
     'https://e-com-nlh-fe.vercel.app',
   ],
   credentials: true, //access-control-allow-credentials:true
