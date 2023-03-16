@@ -19,6 +19,7 @@ class orderControllers {
       taxPrice,
       shippingPrice,
       totalPrice,
+      paymentResult,
       voucher,
     } = req.body
     const items = await Item.find({
@@ -55,6 +56,11 @@ class orderControllers {
         totalPrice,
         voucher,
       })
+      if (paymentResult) {
+        order.isPaid = true
+        order.paidAt = Date.now()
+        order.paymentResult = paymentResult
+      }
       const createdOrder = await order.save()
       if (createdOrder) {
         order.orderItems.map(async (item) => {
