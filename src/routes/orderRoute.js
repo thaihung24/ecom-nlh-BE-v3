@@ -16,7 +16,8 @@ router
   .put(verifyToken, orderControllers.updateStatusOrder)
 
 router.route('/:id/update').put(verifyToken, orderControllers.updateOrderById)
-
+router.route('/inp').post(orderControllers.InpController)
+router.route('/momo').post(verifyToken, orderControllers.quickPayMomoControler)
 router
   .route('/')
   .post(verifyToken, orderControllers.addOrderItems)
