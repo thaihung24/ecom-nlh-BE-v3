@@ -5,7 +5,6 @@ const cookieParser = require('cookie-parser')
 const swaggerUI = require('swagger-ui-express')
 const swaggerJsDoc = require('swagger-jsdoc')
 const fileUpload = require('express-fileupload')
-
 require('dotenv').config()
 const app = express()
 app.use(
@@ -54,6 +53,7 @@ const corsOptions = {
     'https://tlcn-admin-hln.vercel.app',
     'https://ecom-nlh-v3.vercel.app',
     'https://e-com-nlh-fe.vercel.app',
+    'https://test-payment.momo.vn:443',
   ],
   credentials: true, //access-control-allow-credentials:true
   optionSuccessStatus: 200,
@@ -149,4 +149,3 @@ io.on('connection', (socket) => {
     socket.leave(userData._id)
   })
 })
-

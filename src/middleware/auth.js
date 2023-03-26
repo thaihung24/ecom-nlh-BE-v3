@@ -9,6 +9,7 @@ const verifyToken = catchAsyncHandler(async (req, res, next) => {
   const authHeader = req.header('Authorization')
   const token =
     req.cookies.accessToken || (authHeader && authHeader.split(' ')[1])
+  console.log(authHeader)
   // const {
   //     token
   // } = req.cookies

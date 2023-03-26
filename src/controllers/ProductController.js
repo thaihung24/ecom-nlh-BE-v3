@@ -88,21 +88,22 @@ class ProductController {
     const categoryId = await Category.findOne({
       name: req.params.slug,
     })
-    const product = await Product.find({})
+    var product = await Product.find({})
       .populate({
         path: 'subCategory',
         match: {
           category: categoryId._id,
         },
+        select: 'name',
       })
-      .select('name image rating price subCategory productOptions')
-    const result = []
-    product.map((item, index) => {
-      if (item.subCategory !== null) {
-        result.push(item)
-      }
-    })
-    res.json(result)
+      .populate({
+        path: 'manufacturer',
+        select: 'name',
+      })
+      .select('name image rating price subCategory productOptions detailSpecs')
+
+    product = product.filter((value) => value.subCategory !== null)
+    res.json(product)
   })
   // @desc    get product By category
   // @route   GET /api/products/subcategory/:id
@@ -384,7 +385,7 @@ class ProductController {
         .sort({
           rating: -1,
         })
-        .select('name ratting price image')
+        .select('name rating price image')
       const arr = []
       products.map((product) => {
         if (product.subCategory !== null) {
@@ -403,7 +404,7 @@ class ProductController {
           rating: -1,
         })
         .limit(6)
-        .select('name ratting price image')
+        .select('name rating price image')
       res.json(products)
     }
   })
