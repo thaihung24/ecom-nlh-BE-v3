@@ -16,7 +16,7 @@ app.use(
 
 app.use(bodyParser.json({ limit: '10mb', extended: true }))
 
-//options swagger
+//options swaggere
 
 const options = {
   definition: {
