@@ -13,7 +13,6 @@ app.use(
     limit: '10mb',
   })
 )
-
 app.use(bodyParser.json({ limit: '10mb', extended: true }))
 
 //options swaggere
