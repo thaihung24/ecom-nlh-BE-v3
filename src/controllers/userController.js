@@ -40,8 +40,6 @@ class userControllers {
         return v
       })
     }
-    console.log(isNew)
-
     if (isNew) {
       // Add address
       const address = await Address.create({
