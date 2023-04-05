@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 
+const mongooseDelete = require('mongoose-delete')
 // Schema
 const AddressSchema = mongoose.Schema({
   province: {
@@ -33,10 +34,13 @@ const AddressSchema = mongoose.Schema({
     },
   },
 })
+// plugin
+AddressSchema.plugin(mongooseDelete, {
+  overrideMethods: 'all',
+  deleteAt: true,
+})
 // exports
 let Address = mongoose.model('address', AddressSchema)
 module.exports = Address
 
 module.exports.schema = AddressSchema
-
-// plugin

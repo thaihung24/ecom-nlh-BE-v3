@@ -11,9 +11,9 @@
         "data:import": "node src/seeder/seeder ",
         "build": "tsc",
         "data:destroy": "node src/seeder/seeder -d ",
-        "start": "nodemon index.js",
-        "dev": "SET NODE_ENV=DEVELOPMENT& nodemon index.js",
-        "prod": "SET NODE_ENV=PRODUCTION& nodemon index.js",
+        "start": "cross-env NODE_ENV=PRODUCTION node index.js",
+        "dev": "nodemon index.js",
+        "prod": "SET NODE_ENV=PRODUCTION& index.js",
         "swagger-autogen": "node src/seeder/swagger.js"
     },
     "author": "",
@@ -56,5 +56,8 @@
         "swagger-autogen": "^2.22.0",
         "swagger-jsdoc": "^6.2.5",
         "swagger-ui-express": "^4.6.0"
+    },
+    "devDependencies": {
+        "cross-env": "^7.0.3"
     }
 }
