@@ -3,6 +3,7 @@ const User = require('../models/user/User')
 const Address = require('../models/user/Address')
 const catchAsyncHandler = require('../middleware/async')
 const asyncHandler = require('express-async-handler')
+const mongoose = require('mongoose')
 class userControllers {
   //@desc GET user profile
   //@route POST / api/users/profile
@@ -126,23 +127,43 @@ class userControllers {
   // ##DELETE ADDRESS
   // DELETE /api/users/address/:addressID
   deleteAddress = catchAsyncHandler(async (req, res) => {
-    const { addressID } = req.params
-    const user = await User.findById(req.user.id)
+    const session = await mongoose.startSession()
+    try {
+      const { addressID } = req.params
+      const user = await User.findById(req.user.id)
+      const isAddressFound = user.addresses.some(
+        (address) => address.detailAddress._id.toString() == addressID
+      )
+      if (isAddressFound) {
+        const addresses = user.addresses.filter((v) => {
+          return v.detailAddress._id.toString() != addressID
+        })
 
-    const addresses = user.addresses.filter((v) => {
-      return v.detailAddress._id.toString() != addressID
-    })
+        user.addresses = addresses
 
-    user.addresses = addresses
-
-    await user.save({
-      validateBeforeSave: false,
-    })
-
-    res.status(200).json({
-      success: true,
-      message: 'Address deleted',
-    })
+        await user.save({
+          validateBeforeSave: false,
+        })
+        await Address.findByIdAndDelete(addressID)
+        await session.commitTransaction()
+        session.endSession()
+        res.status(200).json({
+          success: true,
+          message: 'Address deleted',
+        })
+      } else {
+        res.status(400).json({
+          success: false,
+          message: 'Address not found ',
+        })
+      }
+    } catch (error) {
+      await session.abortTransaction()
+      session.endSession()
+      res
+        .status(500)
+        .json({ error: 'An error occurred while processing your request.' })
+    }
   })
   // GET /api/users/address/:addressID
   getAddress = catchAsyncHandler(async (req, res, next) => {

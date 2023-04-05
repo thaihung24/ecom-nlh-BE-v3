@@ -62,7 +62,7 @@ app.use(cors(corsOptions))
 // middle ware for dev log
 const morgan = require('morgan')
 
-if (process.env.NODE_ENV == 'develop') {
+if (process.env.NODE_ENV == 'DEVELOP') {
   app.use(morgan('dev'))
 }
 //
@@ -103,7 +103,7 @@ const PORT = process.env.PORT
 //
 
 const server = app.listen(PORT || 5000, () =>
-  console.log('Server start on port ' + PORT)
+  console.log('Server start on port ' + PORT + ' ENV ' + process.env.NODE_ENV)
 )
 const io = require('socket.io')(server, {
   pingTimeout: 60000,
