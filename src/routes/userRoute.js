@@ -17,7 +17,8 @@ router
   .route('/address/:addressID')
   .get(verifyToken, userController.getAddress)
   .delete(verifyToken, userController.deleteAddress)
-
+//add address
+router.route('/address').post(verifyToken, userController.addAddress)
 // avatar update
 router
   .route('/avatar')

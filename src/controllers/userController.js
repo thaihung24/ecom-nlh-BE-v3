@@ -9,7 +9,7 @@ class userControllers {
   //@route POST / api/users/profile
   //@access Private
   getUserProfile = catchAsyncHandler(async (req, res) => {
-    const user = await User.findById(req.user.id)
+    const user = await User.findById(req.user._id)
     if (!user) {
       return next(new ErrorResponse('User not found', 404))
     }
@@ -18,6 +18,64 @@ class userControllers {
       user,
       message: 'User Info',
     })
+  })
+  addAddress = catchAsyncHandler(async (req, res, next) => {
+    const session = await mongoose.startSession()
+    session.startTransaction()
+    try {
+      const user = await User.findById(req.user._id)
+      if (!user) {
+        return next(new ErrorResponse('User not found', 401))
+      }
+      const { addressDetail, addressDefault, detail } = req.body
+      if (!addressDetail) {
+        return next(new ErrorResponse('Not found', 401))
+      }
+      if (!detail) {
+        return next(new ErrorResponse('Detail address not found', 401))
+      }
+
+      if (addressDefault) {
+        user.addresses = user.addresses.map((v) => {
+          v.idDefault = false
+          return v
+        })
+      }
+      const address = new Address({
+        province: {
+          provinceID: addressDetail.province.provinceID,
+          provinceName: addressDetail.province.provinceName,
+        },
+        ward: {
+          wardCode: Number(addressDetail.ward.wardCode),
+          wardName: addressDetail.ward.wardName,
+        },
+        district: {
+          districtID: addressDetail.district.districtID,
+          districtName: addressDetail.district.districtName,
+        },
+      })
+      const addAddress = await address.save()
+      user.addresses.push({
+        idDefault: addressDefault,
+        address: detail,
+        detailAddress: addAddress._id,
+      })
+      const updateUser = await user.save({
+        validateBeforeSave: false,
+      })
+      await session.commitTransaction()
+      session.endSession()
+      res.status(200).json({
+        success: true,
+        message: 'User updated',
+        user: updateUser,
+      })
+    } catch (error) {
+      await session.abortTransaction()
+      session.endSession()
+      res.status(400).json({ error: error })
+    }
   })
   //@desc UPDATE user profile
   //@route PUT api/users/profile
@@ -128,15 +186,16 @@ class userControllers {
   // DELETE /api/users/address/:addressID
   deleteAddress = catchAsyncHandler(async (req, res) => {
     const session = await mongoose.startSession()
+    session.startTransaction()
     try {
       const { addressID } = req.params
       const user = await User.findById(req.user.id)
       const isAddressFound = user.addresses.some(
-        (address) => address.detailAddress._id.toString() == addressID
+        (address) => address.detailAddress.toString() === addressID.toString()
       )
       if (isAddressFound) {
         const addresses = user.addresses.filter((v) => {
-          return v.detailAddress._id.toString() != addressID
+          return v.detailAddress.toString() != addressID.toString()
         })
 
         user.addresses = addresses
