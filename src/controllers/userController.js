@@ -3,6 +3,7 @@ const User = require('../models/user/User')
 const Address = require('../models/user/Address')
 const catchAsyncHandler = require('../middleware/async')
 const asyncHandler = require('express-async-handler')
+const sendToken = require('../utils/jwtToken')
 const mongoose = require('mongoose')
 class userControllers {
   //@desc GET user profile
@@ -61,20 +62,46 @@ class userControllers {
         address: detail,
         detailAddress: addAddress._id,
       })
-      const updateUser = await user.save({
+      await user.save({
         validateBeforeSave: false,
       })
       await session.commitTransaction()
       session.endSession()
-      res.status(200).json({
-        success: true,
-        message: 'User updated',
-        user: updateUser,
-      })
+      sendToken(user, 200, res)
     } catch (error) {
       await session.abortTransaction()
       session.endSession()
       res.status(400).json({ error: error })
+    }
+  })
+  updateAddress = catchAsyncHandler(async (req, res, next) => {
+    const session = await mongoose.startSession()
+    session.startTransaction()
+    try {
+      const { addressID } = req.params
+      const { addressDetail, addressDefault, detail } = req.body
+      const user = await User.findById(req.user._id)
+      const address = await Address.findById(addressID)
+      address = addressDetail
+      await address.save()
+      if (addressDefault) {
+        user.addresses = user.addresses.map((v) => {
+          v.idDefault = false
+          return v
+        })
+      }
+      user.addresses.map((v) => {
+        if (v.detailAddress.toString() === addressID.toString()) {
+          return { ...v, address: detail }
+        }
+      })
+      await user.save()
+      await session.commitTransaction()
+      session.endSession()
+      sendToken(user, 200, res)
+    } catch (error) {
+      await session.abortTransaction()
+      session.endSession()
     }
   })
   //@desc UPDATE user profile
@@ -206,10 +233,7 @@ class userControllers {
         await Address.findByIdAndDelete(addressID)
         await session.commitTransaction()
         session.endSession()
-        res.status(200).json({
-          success: true,
-          message: 'Address deleted',
-        })
+        sendToken(user, 200, res)
       } else {
         res.status(400).json({
           success: false,
@@ -227,9 +251,19 @@ class userControllers {
   // GET /api/users/address/:addressID
   getAddress = catchAsyncHandler(async (req, res, next) => {
     const { addressID } = req.params
-    const address = await Address.findById(addressID)
-    if (!address) return next(new ErrorResponse('Address not found', 404))
+    const user = await User.findById(req.user._id)
+      .populate('addresses.detailAddress')
+      .select('addresses')
 
+    const addressExit = user.addresses.some(
+      (address) => address.detailAddress._id.toString() === addressID.toString()
+    )
+    if (!addressExit) {
+      return next(new ErrorResponse('Address not exit with user', 404))
+    }
+    const address = user.addresses.filter(
+      (address) => address.detailAddress._id.toString() === addressID.toString()
+    )
     res.json({
       success: true,
       address,
