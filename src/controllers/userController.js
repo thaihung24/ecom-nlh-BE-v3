@@ -81,20 +81,37 @@ class userControllers {
       const { addressID } = req.params
       const { addressDetail, addressDefault, detail } = req.body
       const user = await User.findById(req.user._id)
-      const address = await Address.findById(addressID)
-      address = addressDetail
-      await address.save()
+      const address = await Address.findOneAndUpdate(
+        {
+          _id: addressID,
+        },
+        {
+          $set: {
+            ...addressDetail,
+          },
+        },
+        {
+          returnOriginal: false,
+        }
+      )
+      if (!address) {
+        return next(new ErrorResponse('Update fail', 400))
+      }
+      // address = addressDetail
+      // await address.save()
       if (addressDefault) {
         user.addresses = user.addresses.map((v) => {
           v.idDefault = false
           return v
         })
       }
-      user.addresses.map((v) => {
+      const update = user.addresses.map((v) => {
         if (v.detailAddress.toString() === addressID.toString()) {
           return { ...v, address: detail }
         }
+        return v
       })
+      user.addresses = update
       await user.save()
       await session.commitTransaction()
       session.endSession()
@@ -102,6 +119,7 @@ class userControllers {
     } catch (error) {
       await session.abortTransaction()
       session.endSession()
+      res.status(400).json('error')
     }
   })
   //@desc UPDATE user profile
@@ -261,9 +279,10 @@ class userControllers {
     if (!addressExit) {
       return next(new ErrorResponse('Address not exit with user', 404))
     }
-    const address = user.addresses.filter(
+    const address = user.addresses.find(
       (address) => address.detailAddress._id.toString() === addressID.toString()
     )
+
     res.json({
       success: true,
       address,
