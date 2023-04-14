@@ -97,13 +97,13 @@ class orderControllers {
   //@route GET/api/orders/:id
   //@access Private
 
-  getOrderById = asyncHandler(async (req, res) => {
+  getOrderById = asyncHandler(async (req, res, next) => {
     const order = await Order.findById(req.params.id).populate(
       'user',
       'name email'
     )
     if (!order) return next(new ErrorResponse('Order not found', 404))
-    if (order.user.toString() !== req.user._id.toString()) {
+    if (order.user._id.toString() !== req.user._id.toString()) {
       return next(new ErrorResponse('No Unauthorized', 401))
     }
     res.status(200).json({
