@@ -1,7 +1,7 @@
 const express = require('express')
 const ChatConTrollers = require('../controllers/chatControllers')
 const { protect, admin } = require('../middleware/authMiddleware')
-
+const verifyToken = require('../middleware/auth')
 const router = express.Router()
 
 router
@@ -10,7 +10,7 @@ router
   .post(protect, ChatConTrollers.accessChat)
 router
   .route('/fetchChat')
-  .get(protect, ChatConTrollers.fetchChat)
+  .get(verifyToken, ChatConTrollers.fetchChat)
   .post(protect, ChatConTrollers.accessChat)
 router.route('/group').post(protect, ChatConTrollers.createGroupChat)
 router.route('/rename').put(protect, ChatConTrollers.renameGroup)

@@ -90,7 +90,7 @@ class ChatControllers {
                 const FullChat = await Chat.findOne({
                   _id: createdChat._id,
                 }).populate('users', '-password')
-                res.status(200).json(FullChat)
+                res.status(200).json({ FullChat, chatId: isChat._id })
               } catch (error) {
                 res.status(400)
                 throw new Error(error.message)
@@ -104,7 +104,7 @@ class ChatControllers {
               const messages = await Message.find({ chat: chat[0]._id })
                 .populate('sender', 'name avatar email')
                 .populate('chat')
-              res.json(messages)
+              res.json({ messages, chatId: chat[0]._id })
             } catch (error) {
               res.status(400)
               throw new Error(error.message)
