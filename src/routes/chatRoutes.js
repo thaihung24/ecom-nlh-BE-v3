@@ -8,6 +8,10 @@ router
   .route('/')
   .get(protect, ChatConTrollers.fetchChats)
   .post(protect, ChatConTrollers.accessChat)
+router
+  .route('/fetchChat')
+  .get(protect, ChatConTrollers.fetchChat)
+  .post(protect, ChatConTrollers.accessChat)
 router.route('/group').post(protect, ChatConTrollers.createGroupChat)
 router.route('/rename').put(protect, ChatConTrollers.renameGroup)
 router.route('/groupremove').put(protect, ChatConTrollers.removeFromGroup)
