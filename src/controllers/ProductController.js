@@ -6,7 +6,16 @@ const Comment = require('../models/comment/comment')
 const cloudinary = require('cloudinary')
 const asyncHandler = require('../middleware/async')
 const { Configuration, OpenAIApi } = require('openai')
+const redis = require('redis')
+const config = {
+  host: process.env.REDIS_HOST || process.env.IP || '127.0.0.1',
+  port: process.env.REDIS_PORT || 6379,
+}
 class ProductController {
+  constructor() {
+    this._client = redis.createClient(config)
+    console.log(config)
+  }
   //[GET] /api/products
   // @desc    Fetch single product
   // @route   GET /api/products/
@@ -23,7 +32,6 @@ class ProductController {
           },
         }
       : {}
-
     const count = await Product.count({
       ...keyword,
     })
@@ -34,15 +42,58 @@ class ProductController {
       .limit(pageSize)
       .skip(pageSize * (page - 1))
     if (products) {
+      const result = {
+        products,
+        page: page,
+        pages: Math.ceil(count / pageSize),
+      }
+      return result
+      // client.set(key, JSON.stringify(result))
       res.json({
         products,
         page: req.query.page,
         pages: Math.ceil(count / pageSize),
       })
-    } else {
-      res.status(404)
-      throw new Error('Product not found')
     }
+    // const key = `getProducts-${req.query.keyword || ''}-${pageSize}-${page}`
+    // const client = this._client
+    // client.get(key, async (err, reply) => {
+    //   if (err) {
+    //     console.log(err)
+    //     throw err
+    //   }
+    //   if (reply === null) {
+    //     console.log('Cache miss: ' + key)
+    //     const count = await Product.count({
+    //       ...keyword,
+    //     })
+    //     const products = await Product.find({
+    //       ...keyword,
+    //     })
+    //       .select('name price rating image productOptions numReviews')
+    //       .limit(pageSize)
+    //       .skip(pageSize * (page - 1))
+    //     if (products) {
+    //       const result = {
+    //         products,
+    //         page: req.query.page,
+    //         pages: Math.ceil(count / pageSize),
+    //       }
+    //       client.set(key, JSON.stringify(result))
+    //       res.json({
+    //         products,
+    //         page: req.query.page,
+    //         pages: Math.ceil(count / pageSize),
+    //       })
+    //     } else {
+    //       res.status(404)
+    //       throw new Error('Product not found')
+    //     }
+    //   } else {
+    //     console.log('Cache hit: ' + key)
+    //     res.json(JSON.parse(reply))
+    //   }
+    // })
   })
   getProductById = asyncHandler(async (req, res) => {
     const product = await Product.findById(req.params.id)
@@ -103,7 +154,8 @@ class ProductController {
       .select('name image rating price subCategory productOptions detailSpecs')
 
     product = product.filter((value) => value.subCategory !== null)
-    res.json(product)
+    return product
+    // res.json(product)
   })
   // @desc    get product By category
   // @route   GET /api/products/subcategory/:id

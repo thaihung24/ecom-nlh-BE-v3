@@ -50,12 +50,14 @@
         "passport": "^0.6.0",
         "passport-facebook": "^3.0.0",
         "passport-google-oauth20": "^2.0.0",
+        "redis": "^3.1.2",
         "request": "^2.88.2",
         "slugify": "^1.6.5",
         "socket.io": "^4.6.1",
         "swagger-autogen": "^2.22.0",
         "swagger-jsdoc": "^6.2.5",
-        "swagger-ui-express": "^4.6.0"
+        "swagger-ui-express": "^4.6.0",
+        "util": "^0.12.5"
     },
     "devDependencies": {
         "cross-env": "^7.0.3"

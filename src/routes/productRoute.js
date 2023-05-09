@@ -3,17 +3,20 @@ const router = express.Router()
 const productController = require('../controllers/ProductController')
 const verifyToken = require('../middleware/auth')
 const { protect, admin } = require('../middleware/authMiddleware.js')
+const ProductControllerCache = require('../controllers/ProductControllerCache')
 
 router
   .route('/trash')
   .get(verifyToken, admin, productController.getTrashProducts)
 router.route('/count').get(verifyToken, admin, productController.countProducts)
 router.route('/topreviews').get(productController.getTopProducts)
-router.route('/category/:slug').get(productController.getProductsByCategory)
+router
+  .route('/category/:slug')
+  .get(ProductControllerCache.getProductsByCategory)
 router.route('/subcategory/:id').get(productController.getProductsBySubCategory)
 router
   .route('/')
-  .get(productController.index)
+  .get(ProductControllerCache.index)
   .post(verifyToken, admin, productController.createProduct)
 router
   .route('/:id')

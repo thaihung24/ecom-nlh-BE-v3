@@ -49,6 +49,7 @@ const cors = require('cors')
 const corsOptions = {
   origin: [
     'http://localhost:3000',
+    'http://localhost:3001',
     'https://tlcn-admin-hln.vercel.app',
     'https://ecom-nlh-v3.vercel.app',
     'https://e-com-nlh-fe.vercel.app',
@@ -110,6 +111,7 @@ const io = require('socket.io')(server, {
   cors: {
     origin: [
       'http://localhost:3000',
+      'http://localhost:3001',
       'https://ecom-nlh-v3.vercel.app',
       'https://tlcn-admin-hln.vercel.app',
     ],
@@ -128,8 +130,14 @@ io.on('connection', (socket) => {
     socket.join(room)
     console.log('User Joined Room: ' + room)
   })
-  socket.on('typing', (room) => socket.in(room).emit('typing'))
-  socket.on('stop typing', (room) => socket.in(room).emit('stop typing'))
+  socket.on('typing', (room) => {
+    console.log('typing')
+    socket.in(room).emit('typing')
+  })
+  socket.on('stop typing', (room) => {
+    console.log('stop typing')
+    socket.in(room).emit('stop typing')
+  })
 
   socket.on('new message', (newMessageRecieved) => {
     var chat = newMessageRecieved.chat
@@ -138,7 +146,7 @@ io.on('connection', (socket) => {
 
     chat.users.forEach((user) => {
       if (user._id == newMessageRecieved.sender._id) return
-
+      console.log(user._id)
       socket.in(user._id).emit('message recieved', newMessageRecieved)
     })
   })

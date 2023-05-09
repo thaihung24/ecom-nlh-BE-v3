@@ -107,7 +107,7 @@ class userControllers {
       }
       const update = user.addresses.map((v) => {
         if (v.detailAddress.toString() === addressID.toString()) {
-          return { ...v, address: detail }
+          return { ...v, address: detail, idDefault: addressDefault }
         }
         return v
       })
