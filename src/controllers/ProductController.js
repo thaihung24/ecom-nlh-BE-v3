@@ -12,10 +12,10 @@ const config = {
   port: process.env.REDIS_PORT || 6379,
 }
 class ProductController {
-  constructor() {
-    this._client = redis.createClient(config)
-    console.log(config)
-  }
+  // constructor() {
+  //   this._client = redis.createClient(config)
+  //   console.log(config)
+  // }
   //[GET] /api/products
   // @desc    Fetch single product
   // @route   GET /api/products/
@@ -42,12 +42,12 @@ class ProductController {
       .limit(pageSize)
       .skip(pageSize * (page - 1))
     if (products) {
-      const result = {
-        products,
-        page: page,
-        pages: Math.ceil(count / pageSize),
-      }
-      return result
+      // const result = {
+      //   products,
+      //   page: page,
+      //   pages: Math.ceil(count / pageSize),
+      // }
+      // return result
       // client.set(key, JSON.stringify(result))
       res.json({
         products,
@@ -154,8 +154,8 @@ class ProductController {
       .select('name image rating price subCategory productOptions detailSpecs')
 
     product = product.filter((value) => value.subCategory !== null)
-    return product
-    // res.json(product)
+    // return product
+    res.json(product)
   })
   // @desc    get product By category
   // @route   GET /api/products/subcategory/:id

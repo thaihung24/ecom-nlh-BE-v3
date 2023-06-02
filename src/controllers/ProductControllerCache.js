@@ -1,5 +1,4 @@
 'use strict'
-const util = require('util')
 const redis = require('redis')
 const config = {
   host: process.env.REDIS_HOST || process.env.IP || '127.0.0.1',

@@ -4,6 +4,9 @@ const userController = require('../controllers/userController')
 const verifyToken = require('../middleware/auth')
 const { protect, admin } = require('../middleware/authMiddleware.js')
 const { userParser } = require('../utils/cloudinaryConfig')
+
+//[GET] /api/users
+router.route('/').get(verifyToken, admin, userController.getUsers)
 router.route('/trash').get(verifyToken, admin, userController.getTrashUsers)
 //[PUT] /api/users/profile
 //[GET] /api/users/profile
@@ -27,8 +30,6 @@ router
   .put(verifyToken, userParser.single('image'), userController.updateUserAvatar)
 
 //[PUT] /api/users/profile
-//[GET] /api/users/profile
-router.route('/').get(verifyToken, admin, userController.getUsers)
 router
   .route('/:id')
   .delete(verifyToken, admin, userController.deleteUser)

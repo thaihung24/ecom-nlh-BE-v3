@@ -321,28 +321,21 @@ class userControllers {
           ],
         }
       : {}
-    if (keyword) {
-      const users = await User.find(keyword).find({
-        _id: { $ne: req.user._id },
+    const pageSize = 10
+    const page = Number(req.query.page) || 1
+    const count = await User.count({ ...keyword })
+    const users = await User.find({ ...keyword })
+      .limit(pageSize)
+      .skip(pageSize * (page - 1))
+    if (users) {
+      res.json({
+        users,
+        page,
+        pages: Math.ceil(count / pageSize),
       })
-      res.status(200).json(users)
     } else {
-      const pageSize = 10
-      const page = Number(req.query.page) || 1
-      const count = await User.count({})
-      const users = await User.find({})
-        .limit(pageSize)
-        .skip(pageSize * (page - 1))
-      if (users) {
-        res.json({
-          users,
-          page,
-          pages: Math.ceil(count / pageSize),
-        })
-      } else {
-        res.status(404)
-        return next(new ErrorResponse('Product not found', 404))
-      }
+      res.status(404)
+      return next(new ErrorResponse('Product not found', 404))
     }
   })
   //@desc Delete  user profile

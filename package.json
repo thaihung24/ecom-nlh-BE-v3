@@ -19,6 +19,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@apollo/server": "^4.7.1",
         "@sendgrid/mail": "^7.7.0",
         "and": "^0.0.3",
         "argon2": "^0.29.1",
@@ -60,6 +61,8 @@
         "util": "^0.12.5"
     },
     "devDependencies": {
-        "cross-env": "^7.0.3"
+        "cross-env": "^7.0.3",
+        "jest": "^29.5.0",
+        "jest-fetch-mock": "^3.0.3"
     }
 }

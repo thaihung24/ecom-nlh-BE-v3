@@ -10,7 +10,9 @@ router
   .get(verifyToken, admin, orderControllers.getTopUserOrder)
 router.route('/myorders').get(verifyToken, orderControllers.getMyOrders)
 router.route('/:id/pay').put(verifyToken, orderControllers.updateOrderToPaid)
-router.route('/confirm/:id').put(protect, admin, orderControllers.confirmOrder)
+router
+  .route('/confirm/:id')
+  .put(verifyToken, admin, orderControllers.confirmOrder)
 router
   .route('/:id')
   .get(verifyToken, orderControllers.getOrderById)

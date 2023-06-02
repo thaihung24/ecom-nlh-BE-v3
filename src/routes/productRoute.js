@@ -10,13 +10,11 @@ router
   .get(verifyToken, admin, productController.getTrashProducts)
 router.route('/count').get(verifyToken, admin, productController.countProducts)
 router.route('/topreviews').get(productController.getTopProducts)
-router
-  .route('/category/:slug')
-  .get(ProductControllerCache.getProductsByCategory)
+router.route('/category/:slug').get(productController.getProductsByCategory)
 router.route('/subcategory/:id').get(productController.getProductsBySubCategory)
 router
   .route('/')
-  .get(ProductControllerCache.index)
+  .get(productController.index)
   .post(verifyToken, admin, productController.createProduct)
 router
   .route('/:id')

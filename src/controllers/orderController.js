@@ -103,14 +103,18 @@ class orderControllers {
       'name email'
     )
     if (!order) return next(new ErrorResponse('Order not found', 404))
-    if (order.user._id.toString() !== req.user._id.toString()) {
+    if (
+      req.user.isAdmin ||
+      order.user._id.toString() === req.user._id.toString()
+    ) {
+      res.status(200).json({
+        success: true,
+        message: 'Get order by ID',
+        order,
+      })
+    } else if (order.user._id.toString() !== req.user._id.toString()) {
       return next(new ErrorResponse('No Unauthorized', 401))
     }
-    res.status(200).json({
-      success: true,
-      message: 'Get order by ID',
-      order,
-    })
   })
   //@desc Get order by ID
   //@route GET/api/orders/:id
