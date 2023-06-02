@@ -6,11 +6,11 @@ const Comment = require('../models/comment/comment')
 const cloudinary = require('cloudinary')
 const asyncHandler = require('../middleware/async')
 const { Configuration, OpenAIApi } = require('openai')
-const redis = require('redis')
-const config = {
-  host: process.env.REDIS_HOST || process.env.IP || '127.0.0.1',
-  port: process.env.REDIS_PORT || 6379,
-}
+// const redis = require('redis')
+// const config = {
+//   host: process.env.REDIS_HOST || process.env.IP || '127.0.0.1',
+//   port: process.env.REDIS_PORT || 6379,
+// }
 class ProductController {
   // constructor() {
   //   this._client = redis.createClient(config)

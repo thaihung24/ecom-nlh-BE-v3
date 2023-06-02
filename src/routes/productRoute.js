@@ -3,7 +3,7 @@ const router = express.Router()
 const productController = require('../controllers/ProductController')
 const verifyToken = require('../middleware/auth')
 const { protect, admin } = require('../middleware/authMiddleware.js')
-const ProductControllerCache = require('../controllers/ProductControllerCache')
+// const ProductControllerCache = require('../controllers/ProductControllerCache')
 
 router
   .route('/trash')
