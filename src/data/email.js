@@ -322,5 +322,150 @@ function renderGmail(data) {
 
   return html
 }
+function renderGmailVerify(dataForm) {
+  const htmlString = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${dataForm.Tittle}</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 5px;
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo img {
+      max-width: 150px;
+    }
+    .message {
+      font-size: 16px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    .button {
+      display: inline-block;
+      background-color: #007aff;
+      color: #ffffff;
+      text-align: center;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="https://fhqx.hcmute.edu.vn/pluginfile.php/1/theme_maker/logo/1634220575/logo%20CLC%20%281%29.png" alt=" Website Logo">
+      <h1>HLN Ecommerce</h1>
+    </div>
+    <div class="message">
+      <p>Hello!</p>
+      <p>${dataForm.content}.</p>
+    </div>
+    <a class="button" href="${dataForm.Url}">${dataForm.buttonContent}</a>
+  </div>
+</body>
+</html>`
+  const emailTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Verification</title>
+  <style>
+    /* CSS for desktop */
+    @media only screen and (min-width: 600px) {
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+    }
+    /* CSS for mobile */
+    @media only screen and (max-width: 600px) {
+      .container {
+        width: 100%;
+        padding: 20px;
+      }
+    }
+    .button {
+      display: inline-block;
+      background-color: #007aff;
+      color: #ffffff;
+      text-align: center;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 4px;
+      border: none;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .message {
+      font-size: 16px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    .ii a[href] {
+       color:#ffffff
+  }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <h1>HLN Ecommerce</h1>
+    </div>
+    <div class="message">
+      <p>Hello! </p>
+      <p>${dataForm.content}.</p>
+      <p>Liên kết sẽ hết hạn sau 5 phút. Nếu bạn không yêu cầu email này, vui lòng bỏ qua nó.</p>
+    </div>
+    <a class="button" href="${dataForm.Url}">${dataForm.buttonContent}</a>
+  </div>
+</body>
+</html>
+`
+  return htmlString
+}
+// function callAPI() {
+//   function callAPI() {
+//     // Make an AJAX call or fetch request to the server API
+//     // Here's an example using the Fetch API
 
-module.exports = renderGmail
+//     fetch('http:localhost:5000/api/auth/verify-email', {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify({ data: 'example' }), // Include any payload or data to be sent to the server
+//     })
+//       .then((response) => response.json())
+//       .then((data) => {
+//         // Process the response from the server
+//         console.log(data)
+//       })
+//       .catch((error) => {
+//         // Handle any errors that occur during the request
+//         console.error('Error:', error)
+//       })
+//   }
+// }
+module.exports = { renderGmail, renderGmailVerify }

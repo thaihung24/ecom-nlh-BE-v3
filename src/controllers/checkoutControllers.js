@@ -151,7 +151,7 @@ class CheckoutController {
                 { _id: createdOrder._id },
                 {
                   status: {
-                    statusNow: 'Đã tạo giao dịch.',
+                    statusNow: 'Created Transaction.',
                     description:
                       'Đã tạo giao dịch, dang đợi người dùng thanh toán.',
                   },

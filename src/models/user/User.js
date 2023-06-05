@@ -166,7 +166,7 @@ UserSchema.methods.verifyEmailToken = function () {
     .update(verifyToken)
     .digest('hex')
   //expires
-  this.emailCodeExpires = Date.now() + 60 * 1000 * 30
+  this.emailCodeExpires = Date.now() + 60 * 1000 * 5
 
   return verifyToken
 }

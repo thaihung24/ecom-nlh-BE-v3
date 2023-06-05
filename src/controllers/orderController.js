@@ -8,7 +8,7 @@ const Voucher = require('../models/voucher/voucher')
 const sendEmailGrid = require('../utils/sendEmailGrid')
 const sgMail = require('@sendgrid/mail')
 var nodemailer = require('nodemailer')
-const renderGmail = require('../data/email')
+const { renderGmail } = require('../data/email')
 const User = require('../models/user/User')
 class orderControllers {
   addOrderItems = asyncHandler(async (req, res, next) => {
@@ -189,6 +189,7 @@ class orderControllers {
       })
       .limit(pageSize)
       .skip(pageSize * (page - 1))
+      .sort({ createdAt: -1 })
     if (orders) {
       res.json({
         orders,

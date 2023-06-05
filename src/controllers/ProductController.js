@@ -378,7 +378,7 @@ class ProductController {
         (acc, item) => item.rating + acc,
         0
       )
-      product.rating = product.rating / product.reviews.length
+      product.rating = (product.rating / product.reviews.length).toFixed(1)
 
       await product.save()
       res.status(201).json({
@@ -501,6 +501,7 @@ class ProductController {
       max_tokens: 2000,
       temperature: 1,
     })
+    console.log('hihi', response.data.choices[0].text.trim())
     if (response) {
       res.json({ message: response.data.choices[0].text.trim() })
     }
