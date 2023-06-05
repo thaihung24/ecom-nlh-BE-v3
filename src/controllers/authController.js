@@ -16,20 +16,22 @@ class authController {
     const { email, password } = req.body
     // check empty
     if (!email || !password) {
-      return next(new ErrorResponse(`Missing email or password`, 400))
+      return next(new ErrorResponse(`Nhập thiếu thông tin`, 400))
     }
     const user = await User.findOne({
       email,
     }).select('+password')
-    if (!user) return next(new ErrorResponse(`User not found`, 404))
+    if (!user) return next(new ErrorResponse(`Người dùng chưa đưang ký.`, 404))
     // Checks if password is correct or not
     if (!user.enable)
       return next(
-        new ErrorResponse(`User not verify. Please verify email..`, 404)
+        new ErrorResponse(`Người dùng chưa xác thực, vui lòng xác thực`, 404)
       )
     const isPasswordMatched = await user.comparePassword(password)
     if (!isPasswordMatched) {
-      return next(new ErrorResponse(`Invalid Email or Password`, 401))
+      return next(
+        new ErrorResponse(`Sai thông tin tài khoản hoặc mật khẩu.`, 401)
+      )
     }
 
     sendToken(user, 200, res)

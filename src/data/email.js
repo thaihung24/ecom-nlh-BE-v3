@@ -373,7 +373,7 @@ function renderGmailVerify(dataForm) {
       <h1>HLN Ecommerce</h1>
     </div>
     <div class="message">
-      <p>Hello!</p>
+      <p>Xin chào!</p>
       <p>${dataForm.content}.</p>
     </div>
     <a class="button" href="${dataForm.Url}">${dataForm.buttonContent}</a>
