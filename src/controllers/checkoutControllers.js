@@ -284,6 +284,8 @@ class CheckoutController {
                   statusNow: `${JSON.parse(body).message}`,
                   description: 'Đã thanh toán thành công.',
                 },
+                isPaid: true,
+                paidAt: Date.now(),
               }
             )
           } else if (JSON.parse(body).resultCode == 1000) {
